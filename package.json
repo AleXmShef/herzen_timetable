@@ -4,15 +4,25 @@
   "description": "IDK",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "node": "node server.js",
+    "dev-back": "nodemon server.js",
+    "dev": "concurrently \"nodemon index.js\" \"npm start --prefix client\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HuiloIvanovich/herzen_timetable.git"
   },
   "author": "Aleksandr Shafir",
   "license": "ISC",
+  "homepage": "https://github.com/HuiloIvanovich/herzen_timetable#readme",
   "dependencies": {
     "axios": "^0.20.0",
+    "body-parser": "^1.19.0",
     "concurrently": "^5.3.0",
     "config": "^3.3.1",
     "express": "^4.17.1",
+    "html-to-json-data": "^1.6.0",
     "mongoose": "^5.10.3",
     "nodemon": "^2.0.4"
   }
