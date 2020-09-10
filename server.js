@@ -11,6 +11,8 @@ const timetable = require('./routes/api/timetable');
 
 app.use('/api/timetable', timetable);
 
+const herokuURL = 'https://herzen-timetable.herokuapp.com/';
+
 // Server static assets if in production
 if (process.env.NODE_ENV === 'production') {
     // Set static folder
@@ -23,15 +25,18 @@ if (process.env.NODE_ENV === 'production') {
     //Heroku anti shutdown request
     setInterval(async () => {
         try {
-            const resp = await axios.get("https://spbu-campus-maps.herokuapp.com/");
+            const resp = await axios.get(herokuURL);
         } catch (err) {
             //Basically impossible to end up here
             console.error(err);
         }
     }, 120000);
-} else {
+}
+
+//probably we are on dev localhost
+else {
     app.get('/', (req, res) => {
-        res.send('Fuck you')
+        res.send('Server working')
     });
 }
 

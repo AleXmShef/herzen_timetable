@@ -70,8 +70,106 @@ const getLevels = async function(faculty, type) {
     }
 }
 
+const getProgramLinks = async function(faculty, type, level) {
+    try {
+        const program_links_raw = await TimetableRequests.getGlobal();
+        const program_links_parced = await parser(program_links_raw.data, {
+            programs: group(`h3:contains(${faculty}) + div h4:contains(${type}) + ul li:contains(${level})`, {
+                link: attr('button', 'onclick'),
+            })
+        });
+        let program_links_processed = [];
+        program_links_parced.programs.forEach(program => {
+            const re = /'*'/
+            let link = program.link.toString().split(re);
+            program_links_processed.push(link[1]);
+        })
+        return program_links_processed;
+    } catch (e) {
+        console.log(e);
+        throw Error('Error while fetching program links');
+    }
+}
+
+const getPrograms = async function(group_links) {
+    try {
+        let groups_raw = await TimetableRequests.getGroups(group_links);
+        let groups_processed = [];
+        for (const group_raw of groups_raw) {
+            groups_processed.push(await parser(group_raw.data, {
+                program: text('table tr td:contains(Направление) + td + td + td'),
+                subprogram: text('table tr:contains(Направление) + tr td + td + td + td'),
+                group: text('table tr td:contains(Группа) + td + td + td'),
+                link: group_links[groups_raw.indexOf(group_raw)]
+            }));
+            let temp = groups_processed[groups_raw.indexOf(group_raw)].group.split('/');
+            groups_processed[groups_raw.indexOf(group_raw)].group = temp[0];
+            groups_processed[groups_raw.indexOf(group_raw)].year = '20' + temp[1];
+        }
+        let programs = [];
+        groups_processed.forEach(group_processed=> {
+            let programIndex = programs.findIndex(program => program.program === group_processed.program);
+            if(programIndex !== -1) {
+                let subprogramIndex = programs[programIndex].subprograms.findIndex(subprogram => subprogram.subprogram === group_processed.subprogram);
+                if(subprogramIndex !== -1) {
+                    let yearIndex = programs[programIndex].subprograms[subprogramIndex].years.findIndex(year => year.year === group_processed.year);
+                    if(yearIndex !== -1) {
+                        programs[programIndex].subprograms[subprogramIndex].years[yearIndex].groups.push({
+                            group: group_processed.group,
+                            link: group_links[groups_processed.indexOf(group_processed)]
+                        })
+                    }
+                    else {
+                        programs[programIndex].subprograms[subprogramIndex].years.push({
+                            year: group_processed.year,
+                            groups: [{
+                                group: group_processed.group,
+                                link: group_links[groups_processed.indexOf(group_processed)]
+                            }]
+                        })
+                    }
+                }
+                else {
+                    programs[programIndex].subprograms.push({
+                        subprogram: group_processed.subprogram,
+                        years: [{
+                            year: group_processed.year,
+                            groups: [{
+                                group: group_processed.group,
+                                link: group_links[groups_processed.indexOf(group_processed)]
+                            }]
+                        }]
+                    })
+                }
+            }
+            else {
+                programs.push({
+                    program: group_processed.program,
+                    subprograms: [{
+                        subprogram: group_processed.subprogram,
+                        years: [{
+                            year: group_processed.year,
+                            groups: [{
+                                group: group_processed.group,
+                                link: group_links[groups_processed.indexOf(group_processed)]
+                            }]
+                        }]
+                    }]
+                })
+            }
+
+        })
+        return {programs: programs};
+    } catch (e) {
+        console.log(e);
+        throw Error('Error while fetching timetable');
+    }
+}
+
 module.exports = {
     getFaculties,
     getTypes,
-    getLevels
+    getLevels,
+    getProgramLinks,
+    getPrograms
 }
