@@ -1,102 +1,36 @@
 const express = require('express');
 const router = express.Router();
+
 const axios = require('axios');
 const parser = require('html-to-json-data');
 const { group, text, number, href, src, uniq, attr } = require('html-to-json-data/definitions');
-const fs = require('fs')
+const fs = require('fs');
 
-// @route   GET api/timetable/faculty
+const TimetableControllers = require('../../controllers/timetable');
+
+// @route   GET api/timetable/faculties
 // @args    NONE
 // @access  Public
 // @desc    Get all faculties
-router.get('/faculty', async (req, res) => {
-    try {
-        const faculties_raw = await axios.get('https://guide.herzen.spb.ru/static/schedule.php');
-        const faculties_processed = await parser(faculties_raw.data, {
-            faculties: group('.body div h3', {
-                faculty: text('a')
-            })
-        });
-        if(!faculties_processed) {
-            res.status(500).json({error: "Cannot fetch any data"});
-        }
-        res.json(faculties_processed);
-    } catch (err) {
-        console.log(err);
-        res.status(500).send('Server error');
-    }
-});
+router.get('/faculties', TimetableControllers.getFaculties);
 
-// @route   GET api/timetable/type
+// @route   GET api/timetable/types
 // @args    "faculty" - faculty name
 // @access  Public
 // @desc    Get education types for given faculty
-router.get('/type', async (req, res) => {
-    if(!req.body.faculty) {
-        console.log(req.body);
-        return res.status(400).json({message: "No faculty specified"});
-    }
-    try {
-        const types_raw = await axios.get('https://guide.herzen.spb.ru/static/schedule.php');
-        const types_processed = await parser(types_raw.data, {
-            types: group(`h3:contains(${req.body.faculty}) + div h4`, {
-                type: text(':self'),
-            })
-        });
-        if(!types_processed) {
-            res.status(500).json({error: "Cannot fetch any data"});
-        }
-        res.json(types_processed);
-    } catch (err) {
-        console.log(err);
-        res.status(500).send('Server error');
-    }
+router.get('/types', TimetableControllers.getTypes);
 
-});
-
-// @route   GET api/timetable/level
+// @route   GET api/timetable/levels
 // @args    "faculty" - faculty name, "type" - education type
 // @access  Public
 // @desc    Get education levels for given faculty & education type
-router.get('/level', async (req, res) => {
-    if(!req.body.faculty || !req.body.type) {
-        console.log(req.body);
-        return res.status(400).json({message: "Invalid data"});
-    }
-    try {
-        const levels_raw = await axios.get('https://guide.herzen.spb.ru/static/schedule.php');
-        const levels_processed = await parser(levels_raw.data, {
-            levels: group(`h3:contains(${req.body.faculty}) + div h4:contains(${req.body.type}) + ul li`, {
-                level: text(':self'),
-            })
-        });
-        if(!levels_processed) {
-            res.status(500).json({error: "Cannot fetch any data"});
-        }
-        let levels = [];
-        const candidates = levels_processed.levels;
-        candidates.forEach(candidate => {
-            const bachelor_re = /бакалавриат/;
-            const masters_re = /магистратура/;
+router.get('/levels', TimetableControllers.getLevels);
 
-            if(bachelor_re.test(candidate.level) && levels.length < 1)
-                levels.push({level: "бакалавриат"})
-            if(masters_re.test(candidate.level) && levels.length < 2)
-                levels.push({level: "магистратура"})
-        })
-        levels = {levels: levels};
-        res.json(levels);
-    } catch (err) {
-        console.log(err);
-        res.status(500).send('Server error');
-    }
-});
-
-// @route   GET api/timetable/program
+// @route   GET api/timetable/programs
 // @args    "faculty" - faculty name, "type" - education type, "level" - education level
 // @access  Public
 // @desc    Get education programs for given faculty, education type & level
-router.get('/program', async (req, res) => {
+router.get('/programs', async (req, res) => {
     if(!req.body.faculty || !req.body.type || !req.body.level) {
         console.log(req.body);
         return res.status(400).json({message: "Invalid data"});
@@ -114,8 +48,17 @@ router.get('/program', async (req, res) => {
             let res = program.link.toString().split(re);
             programs.push(res[1]);
         });
+        let temp_axios_requests = [];
+        axios.interceptors.request.use(function(request) {
+            console.log(request.headers.get);
+            return request;
+        })
         for (let i = 0; i < programs.length; i++) {
-            const program_raw = await axios.get('https://guide.herzen.spb.ru' + programs[i]);
+            temp_axios_requests[i] = axios.get('https://guide.herzen.spb.ru' + programs[i]);
+        }
+        const results = await axios.all(temp_axios_requests);
+        for(let i= 0; i < programs.length; i++) {
+            const program_raw = results[i];
             const program_processed = await parser(program_raw.data, {
                 program: text('table tr td:contains(Направление) + td + td + td')
             })
