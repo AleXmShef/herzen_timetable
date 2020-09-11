@@ -1,5 +1,5 @@
 const parser = require('html-to-json-data');
-const { group, text, number, href, src, uniq, attr } = require('html-to-json-data/definitions');
+const { group, text, attr } = require('html-to-json-data/definitions');
 const fs = require('fs');
 
 const TimetableRequests = require('../requests/timetable');
@@ -166,10 +166,141 @@ const getPrograms = async function(group_links) {
     }
 }
 
+const getGroupTimetable = async function (groupURL) {
+    try {
+        const timetable_raw = await TimetableRequests.getGroup(groupURL);
+        const timetable_parsed = parser(timetable_raw.data, {
+            rows: group('.schedule tbody + tbody tr', {
+                info_columns: group('th', {
+                    text: text(':self'),
+                    attr: attr(':self', 'class')
+                }),
+                group_columns: group('td', {
+                    text: text(':self')
+                })
+            })
+        });
+        let timetable_processed = {days: []};
+        let current_day = -1;
+        let current_hour = -1;
+        let current_week = -1;
+        timetable_parsed.rows.forEach(row => {
+            const parseClasses = function (day, hour, week, group) {
+                let str = row.group_columns[group].text;
+                while(true) {
+                    if(str.length < 2)
+                        break;
+                    if(str === '—') {
+                        timetable_processed.days[current_day].hours[current_hour].weeks[current_week].classes.push({
+                            type: "empty"
+                        });
+                        break;
+                    }
+                    let class_name = str.substring(0, str.search(/\[/));
+                    str = str.slice(str.search(/\[/), str.length);
+
+                    let class_type = str.substring(0, str.search(/]/) + 1);
+                    str = str.slice(str.search(/]/) + 2, str.length);
+
+                    let class_dates_raw = str.substring(0, str.search(/\)/) + 1);
+                    class_dates_raw = class_dates_raw.substring(1, class_dates_raw.length - 1);
+                    if(class_dates_raw.includes('студ'))
+                        class_dates_raw = class_dates_raw.substring(0, class_dates_raw.search(/, [0-9]* студ/));
+                    let class_dates = [];
+                    class_dates.push({dates_raw: class_dates_raw});
+                    class_dates_raw = class_dates_raw.split(',');
+                    class_dates_raw.forEach(date => {
+                        if(date.includes('—') || date.includes('-')) {
+                            let borders = date.split(/[—-]/);
+                            let begin = borders[0].split('.');
+                            begin = Date.UTC(2020, parseInt(begin[1]), parseInt(begin[0]));
+                            let end = borders[1].split('.');
+                            end = Date.UTC(2020, parseInt(end[1]), parseInt(end[0]));
+                            class_dates.push({
+                                type: 'interval',
+                                begin: begin,
+                                end: end
+                            })
+                        }
+                        else {
+                            let _date = date.split('.');
+                            _date = Date.UTC(2020, parseInt(_date[1]), parseInt(_date[0]));
+                            class_dates.push({
+                                type: 'singular',
+                                date: _date
+                            })
+                        }
+                    })
+                    str = str.slice(str.search(/\)/) + 2, str.length);
+
+                    let class_teacher = str.substring(0, str.search(/,/));
+                    str = str.slice(str.search(/,/) + 2, str.length);
+
+                    let class_place = 0;
+
+                    if(str.search(/[а-я0-9][а-я]*[А-Я]/) > -1) {
+                        let match = str.match(/[а-я0-9][а-я]*[А-Я]/);
+                        let index = match.index + match[0].length - 1;
+                        class_place = str.substring(0, index);
+                        str = str.slice(index, str.length);
+                    }
+                    else {
+                        if(str.search(/идео-лекция/) > -1)
+                            str = "В" + str;
+                        class_place = str;
+                        str = "";
+                    }
+                    timetable_processed.days[current_day].hours[current_hour].weeks[current_week].classes.push({
+                        class: class_name,
+                        type: class_type,
+                        dates: class_dates,
+                        teacher: class_teacher,
+                        place: class_place
+                    })
+                }
+            }
+            for(const column of row.info_columns) {
+                if(column.attr === "dayname") {
+                    timetable_processed.days.push({
+                        day: column.text,
+                        hours: []
+                    });
+                    current_day++;
+                    current_hour = -1;
+                    break;
+                }
+                else if(column.text.match(/:/)) {
+                    timetable_processed.days[current_day].hours.push({
+                        timespan: column.text,
+                        weeks: [{
+                            classes: []
+                        }]
+                    })
+                    current_hour++;
+                    current_week = 0;
+                    parseClasses(current_day, current_hour, current_week, 0);
+                }
+                else if(column.text === "Н") {
+                    timetable_processed.days[current_day].hours[current_hour].weeks.push({
+                        classes: []
+                    })
+                    current_week++;
+                    parseClasses(current_day, current_hour, current_week, 0);
+                }
+            }
+        })
+        return timetable_processed;
+    } catch (e) {
+        console.log(e);
+        throw Error('Error while fetching timetable');
+    }
+}
+
 module.exports = {
     getFaculties,
     getTypes,
     getLevels,
     getProgramLinks,
-    getPrograms
+    getPrograms,
+    getGroupTimetable
 }

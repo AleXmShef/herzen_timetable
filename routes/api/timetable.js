@@ -33,4 +33,10 @@ router.get('/programs', TimetableControllers.getPrograms);
 // @desc    Get all timetable in a single json
 router.get('/all', TimetableControllers.getAll);
 
+// @route   GET api/timetable/group
+// @args    "groupURL" - group URL, begins with /static
+// @access  Public
+// @desc    Get timetable for a specified group url
+router.get('/group', TimetableControllers.getGroupTimetable);
+
 module.exports = router;

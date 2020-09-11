@@ -12,7 +12,12 @@ const getGroups = async function(groupURLs) {
     return await axios.all(requests);
 }
 
+const getGroup = async function(groupURL) {
+    return await axios.get('https://guide.herzen.spb.ru' + groupURL);
+}
+
 module.exports = {
     getGlobal,
-    getGroups
+    getGroups,
+    getGroup
 }
