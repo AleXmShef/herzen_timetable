@@ -10,9 +10,11 @@ const getFaculties = async function (req, res) {
 }
 
 const getTypes = async function (req, res) {
-    let faculty = req.body.faculty;
-    if(!faculty)
+    let faculty = req.query.faculty;
+    if(!faculty) {
         res.status(500).json({status: 500, message: 'No faculty specified'});
+        return;
+    }
     try {
         const types = await TimetableServices.getTypes(faculty);
         res.status(200).json(types);
@@ -22,8 +24,8 @@ const getTypes = async function (req, res) {
 }
 
 const getLevels = async function (req, res) {
-    let faculty = req.body.faculty;
-    let type = req.body.type;
+    let faculty = req.query.faculty;
+    let type = req.query.type;
     if(!faculty || !type)
         res.status(500).json({status: 500, message: 'No faculty or type specified'});
     try {
@@ -35,9 +37,9 @@ const getLevels = async function (req, res) {
 }
 
 const getPrograms = async function (req, res) {
-    let faculty = req.body.faculty;
-    let type = req.body.type;
-    let level = req.body.level;
+    let faculty = req.query.faculty;
+    let type = req.query.type;
+    let level = req.query.level;
     if(!faculty || !type || !level)
         res.status(500).json({status: 500, message: 'No faculty or type or level specified'});
     try {
@@ -78,7 +80,7 @@ const getAll = async function (req, res) {
 }
 
 const getGroupTimetable = async function(req, res) {
-    let groupURL = req.body.groupURL;
+    let groupURL = req.query.groupURL;
     if(!groupURL)
         res.status(500).json({status: 500, message: 'No group URL specified'});
     try {

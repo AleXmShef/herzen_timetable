@@ -1,10 +1,20 @@
-import React from 'react';
-import './App.css';
+import React, {Component} from "react";
 
-function App() {
-  return (
-    <div>Test</div>
-  );
+import "./App.css";
+
+import Header from "./components/Header";
+import HomePage from "./components/home/HomePage";
+import {Container} from "react-bootstrap";
+
+class App  extends Component  {
+    render() {
+        return (
+        <Container>
+            <Header/>
+            <HomePage/>
+        </Container>
+        )
+    }
 }
 
 export default App;
