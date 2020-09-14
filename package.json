@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "node": "node server.js",
     "dev-back": "nodemon server.js",
-    "dev": "concurrently \"nodemon server.js\" \"npm start --prefix client\""
+    "dev": "concurrently \"nodemon server.js\" \"npm start --prefix client\"",
+    "heroku-postbuild": "npm run-script build --prefix client"
   },
   "repository": {
     "type": "git",
