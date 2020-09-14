@@ -26,8 +26,10 @@ const getTypes = async function (req, res) {
 const getLevels = async function (req, res) {
     let faculty = req.query.faculty;
     let type = req.query.type;
-    if(!faculty || !type)
+    if(!faculty || !type) {
         res.status(500).json({status: 500, message: 'No faculty or type specified'});
+        return;
+    }
     try {
         const levels = await TimetableServices.getLevels(faculty, type);
         res.status(200).json(levels);
@@ -40,8 +42,10 @@ const getPrograms = async function (req, res) {
     let faculty = req.query.faculty;
     let type = req.query.type;
     let level = req.query.level;
-    if(!faculty || !type || !level)
+    if(!faculty || !type || !level) {
         res.status(500).json({status: 500, message: 'No faculty or type or level specified'});
+        return;
+    }
     try {
         const group_links = await TimetableServices.getProgramLinks(faculty, type, level);
         const programs = await TimetableServices.getPrograms(group_links);
