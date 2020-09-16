@@ -3,6 +3,7 @@ import {Container, Col, Row, Accordion, Card, Button} from "react-bootstrap";
 import PropTypes from 'prop-types';
 
 import TimetableCard from "./TimetableCard";
+import Resources from "./Resources";
 
 import axios from 'axios';
 
@@ -11,122 +12,183 @@ class HomePage extends Component {
         super(props);
         this.state = {
             stageEnum: {
-                facultySelection: 1,
-                typeSelection: 2,
-                levelSelection: 3,
-                programSelection: 4,
-                subprogramSelection: 5,
-                yearSelection: 6,
-                groupSelection: 7
+                facultySelection: 0,
+                typeSelection: 1,
+                levelSelection: 2,
+                programSelection: 3,
+                subprogramSelection: 4,
+                yearSelection: 5,
+                groupSelection: 6
             },
-            currentStage: 1,
-            faculties: [],
-            active_faculty: -1,
-            types: [],
-            active_type: -1,
-            levels: [],
-            active_level: -1,
-            programs: [],
-            active_program: -1,
-            subprograms: [],
-            active_subprogram: -1,
-            years: [],
-            active_year: -1,
-            groups: []
+            stages: [
+                "faculty",
+                "type",
+                "level",
+                "program",
+                "subprogram",
+                "year",
+                "group"
+            ],
+            requests: [
+                "faculties",
+                "types",
+                "levels",
+                "programs",
+                "subprograms",
+                "years",
+                "groups"
+            ],
+            headers: [
+                "Факультеты/институты",
+                "Тип образования",
+                "Уровень образования",
+                "Программы обучения",
+                "Направления подготовки",
+                "Года поступления",
+                "Группы"
+            ],
+            currentStage: -1,
+            stagesData: []
         }
         this.getData = this.getData.bind(this);
     }
 
     componentDidMount() {
-        axios.get('/api/timetable/faculties').then((res) => {
-            this.setState({faculties: res.data.faculties});
-        }).catch((err) => {
-            console.log(err);
-        })
+        this.getData(0, undefined, undefined);
     }
 
-    getData(e) {
-        switch(this.state.currentStage) {
-            case this.state.stageEnum.facultySelection : {
-
+    getData(stage, sender, name, e) {
+        if(this.state.currentStage < stage) {
+            if (stage >= 0 && stage <= 2) {
+                let params = {};
+                if(stage > 1)
+                    params = {
+                        [this.state.stages[this.state.currentStage - 1]]: this.state.stagesData[this.state.currentStage].holderName,
+                        [this.state.stages[this.state.currentStage]]: name
+                    }
+                else if(stage > 0)
+                    params = {
+                        [this.state.stages[this.state.currentStage]]: name
+                    }
+                axios.get('/api/timetable/' + this.state.requests[stage], {
+                    params: params
+                }).then((res) => {
+                    let stagesData = this.state.stagesData;
+                    console.log(res.data);
+                    stagesData.push({
+                        data: res.data[this.state.requests[stage]],
+                        holder: sender,
+                        holderName: name
+                    });
+                    this.setState({stagesData: stagesData, currentStage: stage}, () => {
+                        console.log("Stage changed to: " + this.state.currentStage);
+                    })
+                }).catch((err) => {
+                    console.log(err);
+                });
             }
+            else if(stage === 3) {
+                axios.get('/api/timetable/' + 'programs', {
+                    params: {
+                        [this.state.stages[this.state.currentStage - 1]]: this.state.stagesData[this.state.currentStage].holderName,
+                        [this.state.stages[this.state.currentStage]]: name,
+                        [this.state.stages[this.state.currentStage - 2]]: this.state.stagesData[this.state.currentStage - 1].holderName
+                    }
+                }).then((res) => {
+                    let stagesData = this.state.stagesData;
+                    console.log(res.data);
+                    stagesData.push({
+                        data: res.data[this.state.requests[stage]],
+                        holder: sender,
+                        holderName: name
+                    });
+                    this.setState({stagesData: stagesData, currentStage: stage}, () => {
+                        console.log("Stage changed to: " + this.state.currentStage);
+                    })
+                }).catch((err) => {
+                    console.log(err);
+                });
+            }
+            else if (stage < 7) {
+                let temp = [];
+                let stagesData = this.state.stagesData;
+                stagesData[stage - 1].data.forEach(element => {
+                    console.log(element);
+                    temp.push(element[this.state.requests[stage]]);
+                })
+                console.log(temp);
+                stagesData.push({
+                    data: temp[0],
+                    holder: sender,
+                    holderName: name
+                });
+                console.log(stagesData);
+                this.setState({stagesData: stagesData, currentStage: stage});
+            }
+            else {
+                console.log("hello");
+            }
+        }
+        else if(this.state.currentStage === stage) {
+            let stagesData = this.state.stagesData;
+            stagesData.pop();
+            this.setState({stagesData: stagesData, currentStage: stage - 1}, () => {
+                this.getData(stage, sender, name, e);
+            });
+        }
+        else {
+            let stagesData = this.state.stagesData;
+            for(let i = this.state.currentStage; i >= stage; i--) {
+                stagesData.pop();
+            }
+            this.setState({stagesData: stagesData, currentStage: stage - 1}, () => {
+                this.getData(stage, sender, name, e);
+            });
         }
     }
 
     render() {
-        return (this.state.currentStage > 0 && this.state.faculties.length > 0) ? (
+        const currentStage = this.state.currentStage;
+        const stageEnum = this.state.stageEnum;
+        let output = 0;
+        for(let i = this.state.currentStage; i >= 0; i--) {
+            if (this.state.stagesData[i]) {
+                const temp = output;
+                output =
+                <React.Fragment>
+                    <Card>
+                        <Card.Header>
+                            {this.state.headers[i]}
+                        </Card.Header>
+                    </Card>
+                    {
+                        this.state.stagesData[i].data.map(item => {
+                            const itemIndex = this.state.stagesData[i].data.indexOf(item) + 1;
+                            return (
+                                <TimetableCard children={temp} header_name={item[this.state.stages[i]]} key={itemIndex} index={itemIndex} func_advance={this.getData} stage={i + 1}>
+                                    {(temp !== 0 && this.state.stagesData[i + 1] && (this.state.stagesData[i + 1].holder === itemIndex)) ?  temp : undefined}
+                                </TimetableCard>
+                            )
+                        })
+                    }
+                </React.Fragment>
+            }
+        }
+        console.log(output);
+        return (
             <Container style={{marginTop: 150}}>
                 <Row className="justify-content-md-center">
                     <Col md style={{'marginBottom': 50}}>
                         <Accordion>
-                            <Card>
-                                <Card.Header>
-                                    Факультеты/институты
-                                </Card.Header>
-                            </Card>
-                            {this.state.faculties.map(faculty => {
-                                const index = this.state.faculties.indexOf(faculty) + 1;
-                                return (<TimetableCard func_advance={this.getData} key={index} header_name={faculty.faculty} index={index}/>);
-                            })}
+                            {output}
                         </Accordion>
                     </Col>
                     <Col md>
-                        <Accordion>
-                            <Card>
-                                <Card.Header>
-                                    <Accordion.Toggle as={Button} variant="link" eventKey="0">
-                                        Click me!
-                                    </Accordion.Toggle>
-                                </Card.Header>
-                                <Accordion.Collapse eventKey="0">
-                                    <Card.Body>Hello! I'm the body</Card.Body>
-                                </Accordion.Collapse>
-                            </Card>
-                            <Card>
-                                <Card.Header>
-                                    <Accordion.Toggle as={Button} variant="link" eventKey="1">
-                                        Click me!
-                                    </Accordion.Toggle>
-                                </Card.Header>
-                                <Accordion.Collapse eventKey="1">
-                                    <Card.Body>Hello! I'm another body</Card.Body>
-                                </Accordion.Collapse>
-                            </Card>
-                            <Card>
-                                <Card.Header>
-                                    <Accordion.Toggle as={Button} variant="link" eventKey="1">
-                                        Click me!
-                                    </Accordion.Toggle>
-                                </Card.Header>
-                                <Accordion.Collapse eventKey="1">
-                                    <Card.Body>Hello! I'm another body</Card.Body>
-                                </Accordion.Collapse>
-                            </Card>
-                            <Card>
-                                <Card.Header>
-                                    <Accordion.Toggle as={Button} variant="link" eventKey="1">
-                                        Click me!
-                                    </Accordion.Toggle>
-                                </Card.Header>
-                                <Accordion.Collapse eventKey="1">
-                                    <Card.Body>Hello! I'm another body</Card.Body>
-                                </Accordion.Collapse>
-                            </Card>
-                            <Card>
-                                <Card.Header>
-                                    <Accordion.Toggle as={Button} variant="link" eventKey="1">
-                                        Click me!
-                                    </Accordion.Toggle>
-                                </Card.Header>
-                                <Accordion.Collapse eventKey="1">
-                                    <Card.Body>Hello! I'm another body</Card.Body>
-                                </Accordion.Collapse>
-                            </Card>
-                        </Accordion>
+                        <Resources/>
                     </Col>
                 </Row>
             </Container>
-        ) : <div></div>;
+        );
     }
 }
 

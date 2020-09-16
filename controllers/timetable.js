@@ -85,8 +85,11 @@ const getAll = async function (req, res) {
 
 const getGroupTimetable = async function(req, res) {
     let groupURL = req.query.groupURL;
-    if(!groupURL)
+    console.log(groupURL);
+    if(!groupURL) {
         res.status(500).json({status: 500, message: 'No group URL specified'});
+        return;
+    }
     try {
         let timetable = await TimetableServices.getGroupTimetable(groupURL);
         res.status(200).json(timetable);
