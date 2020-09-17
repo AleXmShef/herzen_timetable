@@ -4,21 +4,33 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const favicon = require('serve-favicon');
 
+const TimetableControllers = require('./controllers/timetable');
+
+
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 const timetable = require('./routes/api/timetable');
-
 app.use('/api/timetable', timetable);
+
+
+
+const updateDatabase = () => {
+    axios.get('127.0.0.1:5000/api/timetable/all');
+}
+
 
 const herokuURL = 'https://herzen-timetable.herokuapp.com/';
 
-// Server static assets if in production
+//Server static assets if in production
 if (process.env.NODE_ENV === 'production') {
-    // Set static folder
+
+    //Set static folder
     app.use(express.static('client/build'));
+
+    //Serve favicon
     app.use(favicon(path.resolve(__dirname, 'client', 'build', 'img', 'favicon.ico')));
 
     app.get('*', (req, res) => {
@@ -34,6 +46,8 @@ if (process.env.NODE_ENV === 'production') {
             console.error(err);
         }
     }, 120000);
+
+    updateDatabase();
 }
 
 //probably we are on dev localhost
@@ -43,8 +57,8 @@ else {
     });
 }
 
-const PORT = process.env.PORT || 5000;
 
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log('Server started');
 });

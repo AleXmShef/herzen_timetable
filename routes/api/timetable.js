@@ -33,6 +33,12 @@ router.get('/programs', TimetableControllers.getPrograms);
 // @desc    Get all timetable in a single json
 router.get('/all', TimetableControllers.getAll);
 
+// @route   GET api/timetable/all
+// @args    NONE
+// @access  Public
+// @desc    Get all timetable in a single json
+router.get('/all_cached', TimetableControllers.getAllCached);
+
 // @route   GET api/timetable/group
 // @args    "groupURL" - group URL, begins with /static
 // @access  Public

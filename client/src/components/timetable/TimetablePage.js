@@ -1,49 +1,47 @@
 import React, {Component} from 'react';
-import PropTypes from 'prop-types';
-import {Accordion, Col, Container, Row, Spinner} from "react-bootstrap";
-
+import {Container, Spinner} from "react-bootstrap";
 import axios from 'axios';
 
 import DayCard from "./DayCard";
 
 class TimetablePage extends Component {
-
     constructor(props) {
         super(props);
         let group = localStorage.getItem('group');
+        let shouldRender = true;
         if(!group) {
-            console.log("redirecting to main");
-            this.state = {
-                render: false
-            }
-            this.props.history.push('/');
+            shouldRender = false;
         }
         else {
             group = JSON.parse(group);
-            this.state = {
-                render: true,
-                group: group,
-                timetable: {},
-                currentDate: 0,
-                currentDateMil: 0,
-                currentWeekBegin: 0,
-                currentWeekBeginMil: 0,
-                isOddWeek: 0
-            }
+        }
+        this.state = {
+            shouldRender: shouldRender,
+            group: group,
+            timetable: {},
+            currentDate: 0,
+            currentDateMil: 0,
+            currentWeekBegin: 0,
+            currentWeekBeginMil: 0,
+            isOddWeek: 0
         }
     }
 
-    isOddWeek(start, check) {
-        let begin = start;
-        let isOdd = 1;
-        while(begin <= check) {
-            begin += 7 * 24 * 60 * 60 * 1000;
-            if(isOdd === 1)
-                isOdd = 0;
-            else
-                isOdd = 1;
+    componentDidMount() {
+        if(this.state.shouldRender) {
+            this.parseDates();
+            axios.get('/api/timetable/group', {
+                params: {
+                    groupURL: this.state.group.link
+                }
+            }).then((res) => {
+                this.setState({timetable: res.data});
+            }).catch((err) => {
+                console.log(err);
+            })
         }
-        return isOdd;
+        else
+            this.props.history.push('/');
     }
 
     parseDates() {
@@ -72,32 +70,30 @@ class TimetablePage extends Component {
         });
     }
 
-    componentDidMount() {
-        if(this.state.render) {
-            this.parseDates();
-            axios.get('/api/timetable/group', {
-                params: {
-                    groupURL: this.state.group.link
-                }
-            }).then((res) => {
-                this.setState({timetable: res.data});
-            }).catch((err) => {
-                console.log(err);
-            })
+    isOddWeek(start, check) {
+        let begin = start;
+        let isOdd = 1;
+        while(begin <= check) {
+            begin += 7 * 24 * 60 * 60 * 1000;
+            if(isOdd === 1)
+                isOdd = 0;
+            else
+                isOdd = 1;
         }
+        return isOdd;
     }
 
     render() {
-        if(this.state.render) {
-        return (
-            <Container className="justify-content-md-center" style={
-                {
-                    marginTop: 150
-                }
-            }>
-                { this.state && this.state.timetable.days ? this.state.timetable.days.map(day => {
-                    const dayDateMil = this.state.currentWeekBeginMil + this.state.timetable.days.indexOf(day) * 24*60*60*1000;
+        return this.state.shouldRender && (
+            <Container className="justify-content-md-center" style={{marginTop: 150}}>
+                {this.state.timetable.days ? this.state.timetable.days.map(day => {
+                    const dayDateMil =
+                        this.state.currentWeekBeginMil +
+                        this.state.timetable.days.indexOf(day) *
+                        24*60*60*1000;
+
                     const dayDate = new Date(dayDateMil);
+
                     return <DayCard
                         key={day.day}
                         day={day}
@@ -105,15 +101,12 @@ class TimetablePage extends Component {
                         currentDateMil={dayDateMil}
                         currentDate={dayDate}
                     />
-                }) : <div className='d-flex justify-content-center' style={{marginBottom: 2000}}>
-                    <Spinner animation='border' variant='primary'/>
-                </div>}
+                }) :
+                    <div className='d-flex justify-content-center' style={{marginBottom: 2000}}>
+                        <Spinner animation='border' variant='primary'/>
+                    </div>}
             </Container>
-        )} else {
-            return <div>
-                "redirecting..."
-            </div>;
-        }
+        )
     }
 }
 

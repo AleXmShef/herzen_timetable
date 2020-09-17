@@ -1,7 +1,5 @@
 import React, {Component} from 'react';
-import {Container, Col, Row, Accordion, Card, Button, Spinner} from "react-bootstrap";
-import PropTypes from 'prop-types';
-import {useHistory} from 'react-router-dom';
+import {Container, Col, Row, Accordion, Card, Spinner} from "react-bootstrap";
 
 import TimetableCard from "./TimetableCard";
 import Resources from "./Resources";
@@ -12,15 +10,6 @@ class HomePage extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            stageEnum: {
-                facultySelection: 0,
-                typeSelection: 1,
-                levelSelection: 2,
-                programSelection: 3,
-                subprogramSelection: 4,
-                yearSelection: 5,
-                groupSelection: 6
-            },
             stages: [
                 "faculty",
                 "type",
@@ -58,126 +47,114 @@ class HomePage extends Component {
         this.getData(0, undefined, undefined);
     }
 
-    getData(stage, sender, name, e) {
-        if(this.state.currentStage < stage) {
-            if (stage >= 0 && stage <= 2) {
+    getData(senderStage, senderIndex, senderName) {
+        let {stages, requests, currentStage, stagesData} = this.state;
+        if(currentStage < senderStage) {
+            if (senderStage >= 0 && senderStage <= 3) {
                 let params = {};
-                if(stage > 1)
+                if(senderStage > 1)
                     params = {
-                        [this.state.stages[this.state.currentStage - 1]]: this.state.stagesData[this.state.currentStage].holderName,
-                        [this.state.stages[this.state.currentStage]]: name
+                        [stages[currentStage - 1]]: stagesData[currentStage].holderName,
+                        [stages[currentStage]]: senderName
                     }
-                else if(stage > 0)
+                else if(senderStage > 0)
                     params = {
-                        [this.state.stages[this.state.currentStage]]: name
+                        [stages[currentStage]]: senderName
                     }
-                axios.get('/api/timetable/' + this.state.requests[stage], {
+                axios.get('/api/timetable/' + requests[senderStage], {
                     params: params
                 }).then((res) => {
-                    let stagesData = this.state.stagesData;
                     console.log(res.data);
                     stagesData.push({
-                        data: res.data[this.state.requests[stage]],
-                        holder: sender,
-                        holderName: name
+                        data: res.data[requests[senderStage]],
+                        holder: senderIndex,
+                        holderName: senderName
                     });
-                    this.setState({stagesData: stagesData, currentStage: stage}, () => {
+                    this.setState({stagesData: stagesData, currentStage: senderStage}, () => {
                         console.log("Stage changed to: " + this.state.currentStage);
                     })
                 }).catch((err) => {
                     console.log(err);
                 });
             }
-            else if(stage === 3) {
-                axios.get('/api/timetable/' + 'programs', {
-                    params: {
-                        [this.state.stages[this.state.currentStage - 1]]: this.state.stagesData[this.state.currentStage].holderName,
-                        [this.state.stages[this.state.currentStage]]: name,
-                        [this.state.stages[this.state.currentStage - 2]]: this.state.stagesData[this.state.currentStage - 1].holderName
-                    }
-                }).then((res) => {
-                    let stagesData = this.state.stagesData;
-                    console.log(res.data);
-                    stagesData.push({
-                        data: res.data[this.state.requests[stage]],
-                        holder: sender,
-                        holderName: name
-                    });
-                    this.setState({stagesData: stagesData, currentStage: stage}, () => {
-                        console.log("Stage changed to: " + this.state.currentStage);
-                    })
-                }).catch((err) => {
-                    console.log(err);
-                });
-            }
-            else if (stage < 7) {
+            else if (senderStage < 7) {
                 let temp = [];
                 let stagesData = this.state.stagesData;
-                stagesData[stage - 1].data.forEach(element => {
+                stagesData[senderStage - 1].data.forEach(element => {
                     console.log(element);
-                    temp.push(element[this.state.requests[stage]]);
+                    temp.push(element[this.state.requests[senderStage]]);
                 })
                 console.log(temp);
                 stagesData.push({
                     data: temp[0],
-                    holder: sender,
-                    holderName: name
+                    holder: senderIndex,
+                    holderName: senderName
                 });
                 console.log(stagesData);
-                this.setState({stagesData: stagesData, currentStage: stage});
+                this.setState({stagesData: stagesData, currentStage: senderStage});
             }
             else {
-                let group = this.state.stagesData[stage - 1].data[sender-1];
+                let group = this.state.stagesData[senderStage - 1].data[senderIndex-1];
                 localStorage.setItem('group', JSON.stringify(group));
                 this.props.history.push('/timetable');
             }
         }
-        else if(this.state.currentStage === stage) {
+        else if(this.state.currentStage === senderStage) {
             let stagesData = this.state.stagesData;
             stagesData.pop();
-            this.setState({stagesData: stagesData, currentStage: stage - 1}, () => {
-                this.getData(stage, sender, name, e);
+            this.setState({stagesData: stagesData, currentStage: senderStage - 1}, () => {
+                this.getData(senderStage, senderIndex, senderName);
             });
         }
         else {
             let stagesData = this.state.stagesData;
-            for(let i = this.state.currentStage; i >= stage; i--) {
+            for(let i = this.state.currentStage; i >= senderStage; i--) {
                 stagesData.pop();
             }
-            this.setState({stagesData: stagesData, currentStage: stage - 1}, () => {
-                this.getData(stage, sender, name, e);
+            this.setState({stagesData: stagesData, currentStage: senderStage - 1}, () => {
+                this.getData(senderStage, senderIndex, senderName);
             });
         }
     }
 
-    render() {
-        const currentStage = this.state.currentStage;
-        const stageEnum = this.state.stageEnum;
+    composeSelection() {
         let output = 0;
         for(let i = this.state.currentStage; i >= 0; i--) {
             if (this.state.stagesData[i]) {
-                const temp = output;
+                const children = output;
                 output =
-                <React.Fragment>
-                    <Card>
-                        <Card.Header>
-                            {this.state.headers[i]}
-                        </Card.Header>
-                    </Card>
-                    {
-                        this.state.stagesData[i].data.map(item => {
-                            const itemIndex = this.state.stagesData[i].data.indexOf(item) + 1;
-                            return (
-                                <TimetableCard children={temp} header_name={item[this.state.stages[i]]} key={itemIndex} index={itemIndex} func_advance={this.getData} stage={i + 1}>
-                                    {(temp !== 0 && this.state.stagesData[i + 1] && (this.state.stagesData[i + 1].holder === itemIndex)) ?  temp : undefined}
-                                </TimetableCard>
-                            )
-                        })
-                    }
-                </React.Fragment>
+                    <React.Fragment>
+                        <Card>
+                            <Card.Header>
+                                {this.state.headers[i]}
+                            </Card.Header>
+                        </Card>
+                        {
+                            this.state.stagesData[i].data.map(item => {
+                                const itemIndex = this.state.stagesData[i].data.indexOf(item) + 1;
+                                return (
+                                    <TimetableCard
+                                        header_name={item[this.state.stages[i]]}
+                                        key={itemIndex} index={itemIndex}
+                                        func_advance={this.getData}
+                                        stage={i + 1}
+                                    >
+                                        {
+                                            (children && this.state.stagesData[i + 1] &&
+                                            this.state.stagesData[i + 1].holder === itemIndex) ? children : undefined
+                                        }
+                                    </TimetableCard>
+                                )
+                            })
+                        }
+                    </React.Fragment>
             }
         }
-        console.log(output);
+        return output;
+    }
+
+    render() {
+        let output = this.composeSelection();
         return (
             <Container style={{marginTop: 150}}>
                 <Row className="justify-content-md-center">

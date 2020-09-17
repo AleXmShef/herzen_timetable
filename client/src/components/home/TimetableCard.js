@@ -1,11 +1,8 @@
 import React, {Component} from 'react';
-import {Accordion, Card, Button, Spinner, Container} from "react-bootstrap";
+import {Accordion, Card, Button, Spinner} from "react-bootstrap";
 import PropTypes from 'prop-types';
 
 class TimetableCard extends Component {
-    constructor(props) {
-        super(props);
-    }
     testFunc(e) {
         console.log("test", e);
     }

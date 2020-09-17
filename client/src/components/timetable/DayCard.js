@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import {Card, ListGroup, ListGroupItem, Row, Col, Button} from "react-bootstrap";
+import {Card, ListGroup, ListGroupItem, Row, Col} from "react-bootstrap";
 
 class DayCard extends Component {
     constructor(props) {
@@ -34,8 +34,8 @@ class DayCard extends Component {
 
     parseClasses(classes) {
         let __class = 0;
-        classes.map(_class => {
-            return _class.dates.map(date => {
+        classes.forEach(_class => {
+            _class.dates.forEach(date => {
                 if (date.type === "singular") {
                     if (date.date === this.props.currentDateMil) {
                         __class = _class;
@@ -60,16 +60,23 @@ class DayCard extends Component {
                         this.state.months[this.props.currentDate.getMonth()]
                     }
                 </Card.Header>
-                <ListGroup>
+                <ListGroup variant='flush'>
                     {this.props.day.hours.map(hour => {
-                        let _class = this.parseClasses((hour.weeks[this.props.isOddWeek] ? hour.weeks[this.props.isOddWeek] : hour.weeks[0]).classes);
-                        return _class ? <ListGroupItem key={hour.timespan}>
+                        let week = hour.weeks[this.props.isOddWeek] ? this.props.isOddWeek : 0;
+                        let _class = this.parseClasses(hour.weeks[week].classes);
+                        return _class ?
+                            <ListGroupItem key={hour.timespan}>
                             <Row>
                                 <Col sm>
                                     {hour.timespan}
                                 </Col>
                                 <Col md>
-                                    {(_class.moodle_link && _class.moodle_link !== "none") ? <a href={_class.moodle_link} target='_blank'>{_class.class + " " + _class.type}</a> : _class.class + " " + _class.type}
+                                    {
+                                        (_class.moodle_link && _class.moodle_link !== "none") ?
+                                            <a href={_class.moodle_link} target='_blank' rel='noopener noreferrer'>{_class.class + " " + _class.type}</a>
+                                            :
+                                            _class.class + " " + _class.type
+                                    }
                                 </Col>
                                 <Col md>
                                     {_class.teacher}

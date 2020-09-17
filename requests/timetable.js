@@ -6,8 +6,21 @@ const getGlobal = async function() {
 
 const getGroups = async function(groupURLs) {
     let requests = [];
+    const instance = axios.create({timeout: 100000});
+    let iterator = 1;
     groupURLs.forEach(URL => {
-        requests.push(axios.get('https://guide.herzen.spb.ru' + URL));
+        if(requests.length > iterator * 12) {
+            let time = Date.now() + 4000;
+            while(Date.now() < time) {
+
+            }
+            iterator++;
+        }
+        requests.push(instance.get('https://guide.herzen.spb.ru' + URL, {
+            headers: {
+                host: 'guide.herzen.spb.ru'
+            }
+        }));
     })
     return await axios.all(requests);
 }

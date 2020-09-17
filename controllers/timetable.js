@@ -1,4 +1,5 @@
 const TimetableServices = require('../services/timetable');
+const fs = require('fs');
 
 const getFaculties = async function (req, res) {
     try {
@@ -60,26 +61,42 @@ const getAll = async function (req, res) {
     try {
         let timetable = {};
         let faculties = (await TimetableServices.getFaculties()).faculties;
+        let fac_percent = 100/faculties.length;
+        let completion_percent = 0;
+        console.log("Completed " + completion_percent + "%");
         for (const faculty of faculties) {
-            console.log("processing \"" + faculty.faculty + "\" faculty");
+            console.log(faculty.faculty);
             let types = (await TimetableServices.getTypes(faculty.faculty)).types;
+            let types_percent = fac_percent/types.length;
             for (const type of types) {
-                console.log("processing \"" + type.type + "\" type");
                 let levels = (await TimetableServices.getLevels(faculty.faculty, type.type)).levels;
+                let levels_percent = types_percent/levels.length;
                 for (const level of levels) {
-                    console.log("processing \"" + level.level + "\" level");
                     let program_links = await TimetableServices.getProgramLinks(faculty.faculty, type.type, level.level);
                     let programs = (await TimetableServices.getPrograms(program_links)).programs;
                     levels[levels.indexOf(level)].programs = programs;
+                    completion_percent += levels_percent;
+                    console.log("Completed " + (Math.round((completion_percent + Number.EPSILON) * 100) / 100) + "%");
                 }
+
                 types[types.indexOf(type)].levels = levels;
             }
             faculties[faculties.indexOf(faculty)].types = types;
         }
         timetable.faculties = faculties;
+        fs.writeFileSync('timetable.json', timetable);
         res.status(200).json(timetable);
     } catch (e) {
         res.status(500).json({status: 500, message: e.message});
+    }
+}
+
+const getAllCached = async function (req, res) {
+    try {
+        const timetable = fs.readFileSync('timetable.json');
+        res.status(200).json(timetable);
+    } catch (e) {
+        await getAll(req, res);
     }
 }
 
@@ -104,5 +121,6 @@ module.exports = {
     getLevels,
     getPrograms,
     getAll,
+    getAllCached,
     getGroupTimetable
 }

@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Navbar, Image, Nav, Col, Container} from "react-bootstrap";
+import {Navbar, Nav} from "react-bootstrap";
 import {Link} from 'react-router-dom'
 
 class Header extends Component {
@@ -16,7 +16,7 @@ class Header extends Component {
         window.addEventListener('scroll', this.handleScroll);
     }
 
-    handleScroll(event) {
+    handleScroll() {
         if(window.scrollY > 0) {
             if (window.scrollY > this.state.pos) {
                 if (!this.state.hidden)

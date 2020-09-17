@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import PropTypes from 'prop-types';
 import {Accordion, Button, Card} from "react-bootstrap";
 
 class Resources extends Component {
