@@ -25,6 +25,7 @@
     "express": "^4.17.1",
     "html-to-json-data": "^1.6.0",
     "mongoose": "^5.10.3",
-    "nodemon": "^2.0.4"
+    "nodemon": "^2.0.4",
+    "serve-favicon": "^2.5.0"
   }
 }

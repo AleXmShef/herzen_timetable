@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const bodyParser = require('body-parser');
 const path = require('path');
+const favicon = require('serve-favicon');
 
 const app = express();
 
@@ -18,6 +19,7 @@ const herokuURL = 'https://herzen-timetable.herokuapp.com/';
 if (process.env.NODE_ENV === 'production') {
     // Set static folder
     app.use(express.static('client/build'));
+    app.use(favicon(path.resolve(__dirname, 'client', 'build', 'img', 'favicon.svg')));
 
     app.get('*', (req, res) => {
         res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));

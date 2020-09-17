@@ -12,11 +12,16 @@ class TimetablePage extends Component {
         super(props);
         let group = localStorage.getItem('group');
         if(!group) {
+            console.log("redirecting to main");
+            this.state = {
+                render: false
+            }
             this.props.history.push('/');
         }
         else {
             group = JSON.parse(group);
             this.state = {
+                render: true,
                 group: group,
                 timetable: {},
                 currentDate: 0,
@@ -68,26 +73,29 @@ class TimetablePage extends Component {
     }
 
     componentDidMount() {
-        this.parseDates();
-        axios.get('/api/timetable/group', {
-            params: {
-                groupURL: this.state.group.link
-            }
-        }).then((res) => {
-            this.setState({timetable: res.data});
-        }).catch((err) => {
-            console.log(err);
-        })
+        if(this.state.render) {
+            this.parseDates();
+            axios.get('/api/timetable/group', {
+                params: {
+                    groupURL: this.state.group.link
+                }
+            }).then((res) => {
+                this.setState({timetable: res.data});
+            }).catch((err) => {
+                console.log(err);
+            })
+        }
     }
 
     render() {
+        if(this.state.render) {
         return (
             <Container className="justify-content-md-center" style={
                 {
                     marginTop: 150
                 }
             }>
-                {this.state.timetable.days ? this.state.timetable.days.map(day => {
+                { this.state && this.state.timetable.days ? this.state.timetable.days.map(day => {
                     const dayDateMil = this.state.currentWeekBeginMil + this.state.timetable.days.indexOf(day) * 24*60*60*1000;
                     const dayDate = new Date(dayDateMil);
                     return <DayCard
@@ -101,7 +109,11 @@ class TimetablePage extends Component {
                     <Spinner animation='border' variant='primary'/>
                 </div>}
             </Container>
-        );
+        )} else {
+            return <div>
+                "redirecting..."
+            </div>;
+        }
     }
 }
 
