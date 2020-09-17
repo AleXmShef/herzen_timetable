@@ -11,6 +11,7 @@ import "./App.css";
 import Header from "./components/Header";
 import HomePage from "./components/home/HomePage";
 import TimetablePage from "./components/timetable/TimetablePage";
+import Footer from "./components/Footer";
 import {Container} from "react-bootstrap";
 
 class App  extends Component  {
@@ -22,6 +23,7 @@ class App  extends Component  {
                 <Route exact path='/' component={HomePage}/>
                 <Route path='/timetable' component={TimetablePage}/>
             </Switch>
+            <Footer/>
         </Router>
         )
     }

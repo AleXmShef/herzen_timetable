@@ -1,5 +1,5 @@
 const parser = require('html-to-json-data');
-const { group, text, attr } = require('html-to-json-data/definitions');
+const { group, text, attr , href} = require('html-to-json-data/definitions');
 const fs = require('fs');
 
 const TimetableRequests = require('../requests/timetable');
@@ -176,7 +176,10 @@ const getGroupTimetable = async function (groupURL) {
                     attr: attr(':self', 'class')
                 }),
                 group_columns: group('td', {
-                    text: text(':self')
+                    text: text(':self'),
+                    links: group('strong a', {
+                        link: href(':self', '')
+                    })
                 })
             })
         });
@@ -187,6 +190,7 @@ const getGroupTimetable = async function (groupURL) {
         timetable_parsed.rows.forEach(row => {
             const parseClasses = function (day, hour, week, group) {
                 let str = row.group_columns[group].text;
+                let iterator = 0;
                 while(true) {
                     if(str.length < 2)
                         break;
@@ -213,9 +217,9 @@ const getGroupTimetable = async function (groupURL) {
                         if(date.includes('—') || date.includes('-')) {
                             let borders = date.split(/[—-]/);
                             let begin = borders[0].split('.');
-                            begin = Date.UTC(2020, parseInt(begin[1]) - 1, parseInt(begin[0]));
+                            begin = new Date(2020, parseInt(begin[1]) - 1, parseInt(begin[0])).getTime();
                             let end = borders[1].split('.');
-                            end = Date.UTC(2020, parseInt(end[1]) - 1, parseInt(end[0]));
+                            end = new Date(2020, parseInt(end[1]) - 1, parseInt(end[0])).getTime();
                             class_dates.push({
                                 type: 'interval',
                                 begin: begin,
@@ -224,7 +228,7 @@ const getGroupTimetable = async function (groupURL) {
                         }
                         else {
                             let _date = date.split('.');
-                            _date = Date.UTC(2020, parseInt(_date[1]) - 1, parseInt(_date[0]));
+                            _date = new Date(2020, parseInt(_date[1]) - 1, parseInt(_date[0])).getTime();
                             class_dates.push({
                                 type: 'singular',
                                 date: _date
@@ -250,13 +254,18 @@ const getGroupTimetable = async function (groupURL) {
                         class_place = str;
                         str = "";
                     }
+                    let moodle_link = "none";
+                    if(row.group_columns[group].links && row.group_columns[group].links[iterator])
+                        moodle_link = row.group_columns[group].links[iterator].link;
                     timetable_processed.days[current_day].hours[current_hour].weeks[current_week].classes.push({
                         class: class_name,
                         type: class_type,
+                        moodle_link: moodle_link,
                         dates: class_dates,
                         teacher: class_teacher,
                         place: class_place
                     })
+                    iterator++;
                 }
             }
             for(const column of row.info_columns) {
@@ -270,8 +279,20 @@ const getGroupTimetable = async function (groupURL) {
                     break;
                 }
                 else if(column.text.match(/:/)) {
+                    let temp = column.text;
+                    temp = temp.split(" — ");
+                    for(let i = 0; i < temp.length; i++) {
+                        let temp2 = temp[i].split(":")
+                        for(let j = 0; j < temp2.length; j++) {
+                            if(temp2[j].length < 2)
+                                temp2[j] = "0" + temp2[j];
+                        }
+                        temp[i] = temp2[0] + ":" + temp2[1];
+                    }
+                    temp = temp[0] + " — " + temp[1];
+
                     timetable_processed.days[current_day].hours.push({
-                        timespan: column.text,
+                        timespan: temp,
                         weeks: [{
                             classes: []
                         }]

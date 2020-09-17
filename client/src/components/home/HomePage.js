@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Container, Col, Row, Accordion, Card, Button} from "react-bootstrap";
+import {Container, Col, Row, Accordion, Card, Button, Spinner} from "react-bootstrap";
 import PropTypes from 'prop-types';
 import {useHistory} from 'react-router-dom';
 
@@ -183,10 +183,14 @@ class HomePage extends Component {
                 <Row className="justify-content-md-center">
                     <Col md style={{'marginBottom': 50}}>
                         <Accordion>
-                            {output}
+                            {(output !== 0) ? output :
+                                <div className='d-flex justify-content-center'>
+                                    <Spinner style={{margin: 8, justifyContent: 'center'}} animation='border' variant='primary'/>
+                                </div>
+                            }
                         </Accordion>
                     </Col>
-                    <Col md>
+                    <Col md style={{'marginBottom': 50}}>
                         <Resources/>
                     </Col>
                 </Row>
