@@ -65,7 +65,6 @@ const getAll = async function (req, res) {
         let completion_percent = 0;
         console.log("Completed " + completion_percent + "%");
         for (const faculty of faculties) {
-            console.log(faculty.faculty);
             let types = (await TimetableServices.getTypes(faculty.faculty)).types;
             let types_percent = fac_percent/types.length;
             for (const type of types) {

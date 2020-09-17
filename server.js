@@ -18,11 +18,11 @@ app.use('/api/timetable', timetable);
 
 
 const updateDatabase = () => {
-    axios.get('127.0.0.1:5000/api/timetable/all');
+    axios.get('http://herzen-timetable.herokuapp.com/api/timetable/all');
 }
 
 
-const herokuURL = 'https://herzen-timetable.herokuapp.com/';
+const herokuURL = 'http://herzen-timetable.herokuapp.com/';
 
 //Server static assets if in production
 if (process.env.NODE_ENV === 'production') {
