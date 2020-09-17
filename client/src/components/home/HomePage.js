@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {Container, Col, Row, Accordion, Card, Button} from "react-bootstrap";
 import PropTypes from 'prop-types';
+import {useHistory} from 'react-router-dom';
 
 import TimetableCard from "./TimetableCard";
 import Resources from "./Resources";
@@ -126,7 +127,9 @@ class HomePage extends Component {
                 this.setState({stagesData: stagesData, currentStage: stage});
             }
             else {
-                console.log("hello");
+                let group = this.state.stagesData[stage - 1].data[sender-1];
+                localStorage.setItem('group', JSON.stringify(group));
+                this.props.history.push('/timetable');
             }
         }
         else if(this.state.currentStage === stage) {

@@ -213,9 +213,9 @@ const getGroupTimetable = async function (groupURL) {
                         if(date.includes('—') || date.includes('-')) {
                             let borders = date.split(/[—-]/);
                             let begin = borders[0].split('.');
-                            begin = Date.UTC(2020, parseInt(begin[1]), parseInt(begin[0]));
+                            begin = Date.UTC(2020, parseInt(begin[1]) - 1, parseInt(begin[0]));
                             let end = borders[1].split('.');
-                            end = Date.UTC(2020, parseInt(end[1]), parseInt(end[0]));
+                            end = Date.UTC(2020, parseInt(end[1]) - 1, parseInt(end[0]));
                             class_dates.push({
                                 type: 'interval',
                                 begin: begin,
@@ -224,7 +224,7 @@ const getGroupTimetable = async function (groupURL) {
                         }
                         else {
                             let _date = date.split('.');
-                            _date = Date.UTC(2020, parseInt(_date[1]), parseInt(_date[0]));
+                            _date = Date.UTC(2020, parseInt(_date[1]) - 1, parseInt(_date[0]));
                             class_dates.push({
                                 type: 'singular',
                                 date: _date

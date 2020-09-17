@@ -25,14 +25,14 @@ class Resources extends Component {
                 </Card>
                 <Card>
                     <Card.Header>
-                        <Button variant="link" href='https://www.herzen.spb.ru/'>
+                        <Button variant="link" href='https://www.herzen.spb.ru/' target='_blank'>
                             Официальный сайт Герцена
                         </Button>
                     </Card.Header>
                 </Card>
                 <Card>
                     <Card.Header>
-                        <Button variant="link" href='https://guide.herzen.spb.ru/'>
+                        <Button variant="link" href='https://guide.herzen.spb.ru/' target='_blank'>
                             Электронный справочник
                         </Button>
                     </Card.Header>
