@@ -92,8 +92,8 @@ const getAll = async function (req, res) {
 
 const getAllCached = async function (req, res) {
     try {
-        const timetable = fs.readFileSync('timetable.json');
-        res.status(200).json(timetable);
+        const timetable = fs.readFileSync('timetable.json', 'utf8');
+        res.status(200).json(JSON.parse(timetable));
     } catch (e) {
         await getAll(req, res);
     }
