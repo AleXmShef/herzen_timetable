@@ -28,6 +28,8 @@ class TimetablePage extends Component {
     }
 
     componentDidMount() {
+        window.scrollTo(0,0);
+
         if(this.state.shouldRender) {
             this.parseDates();
             axios.get('/api/timetable/group', {
