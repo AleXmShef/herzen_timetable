@@ -19,7 +19,7 @@ class HomePage extends Component {
                 "year",
                 "group"
             ],
-            requests: [
+            arrays: [
                 "faculties",
                 "types",
                 "levels",
@@ -37,111 +37,91 @@ class HomePage extends Component {
                 "Года поступления",
                 "Группы"
             ],
-            currentStage: -1,
-            stagesData: []
+            selections: [-1],
+            currentStage: 0,
+            timetable: undefined
         }
-        this.getData = this.getData.bind(this);
+        this.getTimetable = this.getTimetable.bind(this);
+        this.manageStage = this.manageStage.bind(this);
     }
 
     componentDidMount() {
-        this.getData(0, undefined, undefined);
+        this.getTimetable();
     }
 
-    getData(senderStage, senderIndex, senderName) {
-        let {stages, requests, currentStage, stagesData} = this.state;
-        if(currentStage < senderStage) {
-            if (senderStage >= 0 && senderStage <= 3) {
-                let params = {};
-                if(senderStage > 1)
-                    params = {
-                        [stages[currentStage - 1]]: stagesData[currentStage].holderName,
-                        [stages[currentStage]]: senderName
-                    }
-                else if(senderStage > 0)
-                    params = {
-                        [stages[currentStage]]: senderName
-                    }
-                axios.get('/api/timetable/' + requests[senderStage], {
-                    params: params
-                }).then((res) => {
-                    console.log(res.data);
-                    stagesData.push({
-                        data: res.data[requests[senderStage]],
-                        holder: senderIndex,
-                        holderName: senderName
-                    });
-                    this.setState({stagesData: stagesData, currentStage: senderStage}, () => {
-                        console.log("Stage changed to: " + this.state.currentStage);
-                    })
-                }).catch((err) => {
-                    console.log(err);
-                });
+    getTimetable() {
+        axios.get('/api/timetable/all_cached').then((res) => {
+            this.setState({
+                timetable: res.data
+            })
+        }).catch((e) => {
+            console.log(e);
+        })
+    }
+
+    manageStage(senderStage, senderIndex) {
+        let {currentStage, selections, timetable, arrays} = this.state;
+        if(senderStage === 7) {
+            let _data = timetable;
+            console.log(selections);
+            for(let j = 1; j < senderStage; j++) {
+                _data = _data[arrays[j - 1]][selections[j]];
             }
-            else if (senderStage < 7) {
-                let temp = [];
-                let stagesData = this.state.stagesData;
-                stagesData[senderStage - 1].data.forEach(element => {
-                    console.log(element);
-                    temp.push(element[this.state.requests[senderStage]]);
-                })
-                console.log(temp);
-                stagesData.push({
-                    data: temp[0],
-                    holder: senderIndex,
-                    holderName: senderName
-                });
-                console.log(stagesData);
-                this.setState({stagesData: stagesData, currentStage: senderStage});
-            }
-            else {
-                let group = this.state.stagesData[senderStage - 1].data[senderIndex-1];
-                localStorage.setItem('group', JSON.stringify(group));
-                this.props.history.push('/timetable');
-            }
+            let group = _data[arrays[senderStage - 1]][senderIndex - 1];
+            localStorage.setItem('group', JSON.stringify(group));
+            this.props.history.push('/timetable');
+        }
+        else if(currentStage < senderStage) {
+            selections.push(senderIndex - 1);
+            currentStage++;
+            console.log("changing current stage to " + currentStage);
         }
         else if(this.state.currentStage === senderStage) {
-            let stagesData = this.state.stagesData;
-            stagesData.pop();
-            this.setState({stagesData: stagesData, currentStage: senderStage - 1}, () => {
-                this.getData(senderStage, senderIndex, senderName);
-            });
+            selections[currentStage] = senderIndex;
         }
         else {
-            let stagesData = this.state.stagesData;
-            for(let i = this.state.currentStage; i >= senderStage; i--) {
-                stagesData.pop();
-            }
-            this.setState({stagesData: stagesData, currentStage: senderStage - 1}, () => {
-                this.getData(senderStage, senderIndex, senderName);
-            });
+            for(let i = currentStage; i > senderStage; i--)
+                selections.pop();
+            currentStage = senderStage;
+            selections[currentStage] = senderIndex;
         }
+        this.setState({
+            currentStage: currentStage,
+            selections: selections
+        })
     }
 
     composeSelection() {
         let output = 0;
-        for(let i = this.state.currentStage; i >= 0; i--) {
-            if (this.state.stagesData[i]) {
+        let {currentStage, selections, timetable, headers, arrays, stages} = this.state;
+        if(timetable)
+        for(let i = currentStage; i >= 0; i--) {
+            let _data = timetable;
+            for(let j = 1; j <= i; j++) {
+                _data = _data[arrays[j - 1]][selections[j]];
+            }
+            if (_data && _data[arrays[i]]) {
                 const children = output;
                 output =
                     <React.Fragment>
                         <Card>
                             <Card.Header>
-                                {this.state.headers[i]}
+                                {headers[i]}
                             </Card.Header>
                         </Card>
                         {
-                            this.state.stagesData[i].data.map(item => {
-                                const itemIndex = this.state.stagesData[i].data.indexOf(item) + 1;
+                            _data[arrays[i]].map(item => {
+                                const itemIndex = _data[arrays[i]].indexOf(item) + 1;
                                 return (
                                     <TimetableCard
-                                        header_name={item[this.state.stages[i]]}
+                                        header_name={item[stages[i]]}
                                         key={itemIndex} index={itemIndex}
-                                        func_advance={this.getData}
+                                        func_advance={this.manageStage}
                                         stage={i + 1}
                                     >
                                         {
-                                            (children && this.state.stagesData[i + 1] &&
-                                            this.state.stagesData[i + 1].holder === itemIndex) ? children : undefined
+                                            (children && selections[i + 1] !== undefined &&
+                                            selections[i + 1] === itemIndex - 1) ? children : undefined
                                         }
                                     </TimetableCard>
                                 )

@@ -4,9 +4,6 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const favicon = require('serve-favicon');
 
-const TimetableControllers = require('./controllers/timetable');
-
-
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -18,7 +15,11 @@ app.use('/api/timetable', timetable);
 
 
 const updateDatabase = () => {
-    axios.get('http://herzen-timetable.herokuapp.com/api/timetable/all');
+    axios.get('http://herzen-timetable.herokuapp.com/api/timetable/all')
+        .then((res) => {})
+        .catch((err) => {
+
+    });
 }
 
 
@@ -46,8 +47,6 @@ if (process.env.NODE_ENV === 'production') {
             console.error(err);
         }
     }, 120000);
-
-    updateDatabase();
 }
 
 //probably we are on dev localhost

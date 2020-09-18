@@ -15,7 +15,7 @@ class TimetableCard extends Component {
                 <Card.Header>
                     <Accordion.Toggle
                         as={Button}
-                        onClick={(e) => {this.props.func_advance(this.props.stage, index, this.props.header_name, e)}}
+                        onClick={(e) => {this.props.func_advance(this.props.stage, index)}}
                         variant="link"
                         style={{'textAlign': 'left'}}
                         eventKey={index}
