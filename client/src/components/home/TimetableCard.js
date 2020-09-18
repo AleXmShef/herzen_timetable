@@ -15,7 +15,7 @@ class TimetableCard extends Component {
                 <Card.Header>
                     <Accordion.Toggle
                         as={Button}
-                        onClick={(e) => {this.props.func_advance(this.props.stage, index)}}
+                        onClick={(e) => {this.props.pushState(this.props.stage, index)}}
                         variant="link"
                         style={{'textAlign': 'left'}}
                         eventKey={index}
@@ -39,7 +39,7 @@ class TimetableCard extends Component {
 TimetableCard.propTypes = {
     header_name: PropTypes.string.isRequired,
     index: PropTypes.number.isRequired,
-    func_advance: PropTypes.func.isRequired,
+    pushState: PropTypes.func.isRequired,
     stage: PropTypes.number.isRequired
 };
 

@@ -76,14 +76,15 @@ class HomePage extends Component {
             currentStage++;
             console.log("changing current stage to " + currentStage);
         }
-        else if(this.state.currentStage === senderStage) {
-            selections[currentStage] = senderIndex;
+        else if(currentStage === senderStage) {
+            selections[currentStage] = senderIndex - 1;
         }
         else {
             for(let i = currentStage; i > senderStage; i--)
                 selections.pop();
             currentStage = senderStage;
-            selections[currentStage] = senderIndex;
+            selections[currentStage] = senderIndex - 1;
+            console.log(currentStage);
         }
         this.setState({
             currentStage: currentStage,
@@ -116,7 +117,7 @@ class HomePage extends Component {
                                     <TimetableCard
                                         header_name={item[stages[i]]}
                                         key={itemIndex} index={itemIndex}
-                                        func_advance={this.manageStage}
+                                        pushState={this.manageStage}
                                         stage={i + 1}
                                     >
                                         {
