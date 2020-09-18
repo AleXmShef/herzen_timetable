@@ -83,7 +83,7 @@ const getAll = async function (req, res) {
             faculties[faculties.indexOf(faculty)].types = types;
         }
         timetable.faculties = faculties;
-        fs.writeFileSync('timetable.json', timetable);
+        fs.writeFileSync('timetable.json', JSON.stringify(timetable));
         res.status(200).json(timetable);
     } catch (e) {
         res.status(500).json({status: 500, message: e.message});
