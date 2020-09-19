@@ -6,6 +6,7 @@ import "./App.css";
 import Header from "./components/Header";
 import HomePage from "./components/home/HomePage";
 import TimetablePage from "./components/timetable/TimetablePage";
+import About from "./components/about/About";
 import Footer from "./components/Footer";
 
 class App  extends Component  {
@@ -16,6 +17,7 @@ class App  extends Component  {
             <Switch>
                 <Route exact path='/' component={HomePage}/>
                 <Route path='/timetable' component={TimetablePage}/>
+                <Route path='/about' component={About}/>
             </Switch>
             <Footer/>
         </Router>

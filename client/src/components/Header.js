@@ -47,7 +47,7 @@ class Header extends Component {
                         <Nav.Link as={Link} eventKey='timetable' to='/timetable'>Мое расписание</Nav.Link>
                     </Nav>
                     <Nav>
-                        <Nav.Link as={Link} eventKey='about' to='/'>О проекте</Nav.Link>
+                        <Nav.Link as={Link} eventKey='about' to='/about'>О проекте</Nav.Link>
                     </Nav>
                 </Navbar.Collapse>
             </Navbar>

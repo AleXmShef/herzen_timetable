@@ -1,25 +1,12 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {Card, ListGroup, ListGroupItem, Row, Col} from "react-bootstrap";
+import * as Icon from 'react-bootstrap-icons';
 
 class DayCard extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            months: [
-                "января",
-                "февраля",
-                "марта",
-                "апреля",
-                "мая",
-                "июня",
-                "июля",
-                "августа",
-                "сентября",
-                "октября",
-                "ноября",
-                "декабря"
-            ],
             isRemote: 0
         }
     }
@@ -57,7 +44,7 @@ class DayCard extends Component {
                         ", " +
                         this.props.currentDate.getDate() +
                         " " +
-                        this.state.months[this.props.currentDate.getMonth()]
+                        this.props.months[this.props.currentDate.getMonth()]
                     }
                 </Card.Header>
                 <ListGroup variant='flush'>
@@ -67,10 +54,12 @@ class DayCard extends Component {
                         return _class ?
                             <ListGroupItem key={hour.timespan}>
                             <Row>
-                                <Col sm>
+                                <Col sm style={{display: "flex"}}>
+                                    <Icon.Clock size={24} className="timetable-icon"/>
                                     {hour.timespan}
                                 </Col>
-                                <Col md>
+                                <Col md style={{display: "flex"}}>
+                                    <Icon.Book size={24} className="timetable-icon"/>
                                     {
                                         (_class.moodle_link && _class.moodle_link !== "none") ?
                                             <a href={_class.moodle_link} target='_blank' rel='noopener noreferrer'>{_class.class + " " + _class.type}</a>
@@ -78,10 +67,12 @@ class DayCard extends Component {
                                             _class.class + " " + _class.type
                                     }
                                 </Col>
-                                <Col md>
-                                    {_class.teacher}
+                                <Col md style={{display: "flex"}}>
+                                    <Icon.Person size={24} className="timetable-icon"/>
+                                    <div>{_class.teacher}</div>
                                 </Col>
-                                <Col md>
+                                <Col md style={{display: "flex"}}>
+                                    <Icon.GeoAlt size={24} className="timetable-icon"/>
                                     {_class.place}
                                 </Col>
                             </Row>
@@ -97,7 +88,8 @@ DayCard.propTypes = {
     day: PropTypes.object.isRequired,
     isOddWeek: PropTypes.number.isRequired,
     currentDateMil: PropTypes.number.isRequired,
-    currentDate: PropTypes.object.isRequired
+    currentDate: PropTypes.object.isRequired,
+    months: PropTypes.array.isRequired
 };
 
 export default DayCard;

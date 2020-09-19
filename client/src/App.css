@@ -5,3 +5,8 @@
 .scrolled-up{
     transform:translateY(-100%); transition: all 0.2s ease-in-out;
 }
+
+.timetable-icon{
+    flex: none;
+    padding-right: 5px;
+}
