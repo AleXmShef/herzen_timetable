@@ -6,9 +6,9 @@ class About extends Component {
     render() {
         return (
             <Container className="justify-content-md-center" style={{marginTop: 150}}>
-                    <Jumbotron>
+                    <Jumbotron style={{paddingBottom: 32}}>
                         <Row>
-                            <Col md style={{paddingBottom: 50}}>
+                            <Col md style={{paddingBottom: window.screen.width  < 768 ? 50 : 0}}>
                                 <h1>Ну дарова</h1>
                                 <p>
                                     Я даже не знаю че тебе забаклякать.
@@ -23,9 +23,12 @@ class About extends Component {
                                 >
                                     GitHub
                                 </Button>
+                                <div className='row align-items-end justify-content-center' style={{height: 100, paddingLeft: 15}}>
+                                    <Image src='/img/mern-logo.png' style={{width:120}}/>
+                                </div>
                             </Col>
                             <Col>
-                                <Image src='/img/about.jpg' fluid style={{minWidth: 260}}/>
+                                <Image src='/img/about.jpg' fluid style={{minWidth: 260, borderRadius: '5px'}}/>
                             </Col>
                         </Row>
                     </Jumbotron>

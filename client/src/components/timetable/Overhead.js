@@ -27,7 +27,7 @@ class Overhead extends Component {
                                 this.props.weekBegin.getDate() +
                                 " " +
                                 this.props.months[this.props.weekBegin.getMonth()] +
-                                ", " +
+                                " — " +
                                 this.props.weekEnd.getDate() +
                                 " " +
                                 this.props.months[this.props.weekEnd.getMonth()]) : "none"

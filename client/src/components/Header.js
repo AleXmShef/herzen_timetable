@@ -17,11 +17,11 @@ class Header extends Component {
     }
 
     handleScroll() {
-        if(window.scrollY > 0) {
+        if(window.scrollY > 0 && window.scrollY < window.screen.height) {
             if (window.scrollY > this.state.pos) {
                 if (!this.state.hidden)
                     this.setState({hidden: true})
-            } else {
+            } else if (window.scrollY < this.state.pos - 10){
                 if (this.state.hidden)
                     this.setState({hidden: false})
             }
