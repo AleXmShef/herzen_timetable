@@ -122,8 +122,8 @@ class TimetablePage extends Component {
 
     isOddWeek(start, check) {
         let begin = start;
-        let isOdd = 1;
-        while(begin <= check) {
+        let isOdd = 0;
+        while(begin < check) {
             begin += 7 * 24 * 60 * 60 * 1000;
             if(isOdd === 1)
                 isOdd = 0;
