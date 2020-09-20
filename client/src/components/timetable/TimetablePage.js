@@ -34,6 +34,8 @@ class TimetablePage extends Component {
             subgroup = localStorage.getItem('subgroup');
             if(!subgroup)
                 subgroup = 0;
+            else
+                subgroup = Number(subgroup);
         }
         this.state = {
             days: [
@@ -160,7 +162,6 @@ class TimetablePage extends Component {
                     subgroupsNumber={(timetable.subgroups) ? timetable.subgroups.length : 1}
                 />
                 {( timetable.subgroups && timetable.subgroups[subgroup] && timetable.subgroups[subgroup].days) ? timetable.subgroups[subgroup].days.map(day => {
-                    console.log(day.day);
                     const dayDateMil =
                         this.state.currentWeekBeginMil +
                        this.state.days.indexOf(day.day) *
