@@ -136,7 +136,7 @@ class TimetablePage extends Component {
 
     render() {
         let {shouldRender, timetable, group, subgroup} = this.state;
-        return (shouldRender && timetable.subgroups && timetable.subgroups[subgroup]) ? (
+        return shouldRender && (
 
             <Container className="justify-content-md-center" style={{marginTop: 150}}>
                 <Overhead
@@ -148,9 +148,9 @@ class TimetablePage extends Component {
                     groupName={group.group}
                     activeSubgroup={subgroup}
                     changeSubgroup={this.changeSubgroup}
-                    subgroupsNumber={timetable.subgroups.length}
+                    subgroupsNumber={(timetable.subgroups) ? timetable.subgroups.length : 1}
                 />
-                {timetable.subgroups[subgroup].days ? timetable.subgroups[subgroup].days.map(day => {
+                {( timetable.subgroups && timetable.subgroups[subgroup] && timetable.subgroups[subgroup].days) ? timetable.subgroups[subgroup].days.map(day => {
                     const dayDateMil =
                         this.state.currentWeekBeginMil +
                         timetable.subgroups[subgroup].days.indexOf(day) *
@@ -171,7 +171,7 @@ class TimetablePage extends Component {
                         <Spinner animation='border' variant='primary'/>
                     </div>}
             </Container>
-        ) : <div></div>
+        )
     }
 }
 
