@@ -16,7 +16,7 @@ class Overhead extends Component {
                     {"Группа " + this.props.groupName}
                 </h1>
                 <Row className="justify-content-center" noGutters>
-                    <Col xs="auto">
+                    <Col xs="auto" className='d-none d-sm-block'>
                         <Button variant='link' onClick={() => {this.props.changeWeek("impede")}}>
                             <Icon.ChevronDoubleLeft size={24}/>
                         </Button>
@@ -27,22 +27,30 @@ class Overhead extends Component {
                                 this.props.weekBegin.getDate() +
                                 " " +
                                 this.props.months[this.props.weekBegin.getMonth()] +
-                                " — " +
+                                " - " +
                                 this.props.weekEnd.getDate() +
                                 " " +
                                 this.props.months[this.props.weekEnd.getMonth()]) : "none"
                             }
                         </h5>
                     </Col>
-                    <Col xs="auto">
+                    <Col xs="auto" className='d-none d-sm-block'>
                         <Button variant='link' onClick={() => {this.props.changeWeek("advance")}}>
                             <Icon.ChevronDoubleRight size={24}/>
                         </Button>
                     </Col>
                 </Row>
-                <h5>
-                    {(this.props.isOddWeek ? "нижняя" : "верхняя") +  " неделя"}
-                </h5>
+                <Row className='justify-content-center'>
+                    <Button variant='link' className='d-sm-none' onClick={() => {this.props.changeWeek("impede")}}>
+                        <Icon.ChevronDoubleLeft size={24}/>
+                    </Button>
+                    <h5 style={{padding: 6}}>
+                        {(this.props.isOddWeek ? "нижняя" : "верхняя") +  " неделя"}
+                    </h5>
+                    <Button className='d-sm-none' variant='link' onClick={() => {this.props.changeWeek("advance")}}>
+                        <Icon.ChevronDoubleRight size={24}/>
+                    </Button>
+                </Row>
                 {(this.props.subgroupsNumber > 1) ?
                 <Nav className="justify-content-center" onSelect={(eventKey) => {this.props.changeSubgroup(eventKey)}}>
                     <NavDropdown id={"subgroups_dropdown"} title={"Подгруппа"}>

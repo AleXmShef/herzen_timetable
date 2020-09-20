@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {Navbar, Nav} from "react-bootstrap";
-import {Link} from 'react-router-dom'
+import {Link, withRouter} from 'react-router-dom'
 
 class Header extends Component {
     constructor(props) {
@@ -43,11 +43,11 @@ class Header extends Component {
                 <Navbar.Toggle aria-controls="responsive-navbar-nav" />
                 <Navbar.Collapse id="responsive-navbar-nav">
                     <Nav className="mr-auto">
-                        <Nav.Link as={Link} eventKey='main' to='/'>Главная</Nav.Link>
-                        <Nav.Link as={Link} eventKey='timetable' to='/timetable'>Мое расписание</Nav.Link>
+                        <Nav.Link as={Link} eventKey='main' to='/' active={this.props.location.pathname === '/'}>Главная</Nav.Link>
+                        <Nav.Link as={Link} eventKey='timetable' to='/timetable' active={this.props.location.pathname === '/timetable'}>Мое расписание</Nav.Link>
                     </Nav>
                     <Nav>
-                        <Nav.Link as={Link} eventKey='about' to='/about'>О проекте</Nav.Link>
+                        <Nav.Link as={Link} eventKey='about' to='/about' active={this.props.location.pathname === '/about'}>О проекте</Nav.Link>
                     </Nav>
                 </Navbar.Collapse>
             </Navbar>
@@ -55,4 +55,4 @@ class Header extends Component {
     }
 }
 
-export default Header;
+export default withRouter(Header);
