@@ -170,6 +170,9 @@ const getGroupTimetable = async function (groupURL) {
     try {
         const timetable_raw = await TimetableRequests.getGroup(groupURL);
         const timetable_parsed = parser(timetable_raw.data, {
+            header_columns: group('.schedule :first-child tr', {
+                text: text(':self')
+            }),
             rows: group('.schedule tbody + tbody tr', {
                 info_columns: group('th', {
                     text: text(':self'),
@@ -183,19 +186,28 @@ const getGroupTimetable = async function (groupURL) {
                 })
             })
         });
-        let timetable_processed = {days: []};
+        //let timetable_processed = {days: []};
+        let timetable_processed = {subgroups: []};
+        for(let i = 0; i < timetable_parsed.header_columns.length - 1; i++) {
+            timetable_processed.subgroups[i] = {days: []};
+        }
+        timetable_processed.subgroups.forEach(subgroup => {
         let current_day = -1;
         let current_hour = -1;
         let current_week = -1;
+        const subgroupIndex = timetable_processed.subgroups.indexOf(subgroup);
         timetable_parsed.rows.forEach(row => {
-            const parseClasses = function (day, hour, week, group) {
+            const parseClasses = function (day, hour, week, _group) {
+                let group = _group;
+                if(row.group_columns[_group] === undefined)
+                    group = 0;
                 let str = row.group_columns[group].text;
                 let iterator = 0;
                 while(true) {
                     if(str.length < 2)
                         break;
                     if(str === '—') {
-                        timetable_processed.days[current_day].hours[current_hour].weeks[current_week].classes.push({
+                        timetable_processed.subgroups[_group].days[current_day].hours[current_hour].weeks[current_week].classes.push({
                             type: "empty"
                         });
                         break;
@@ -237,27 +249,32 @@ const getGroupTimetable = async function (groupURL) {
                     })
                     str = str.slice(str.search(/\)/) + 2, str.length);
 
-                    let class_teacher = str.substring(0, str.search(/,/));
-                    str = str.slice(str.search(/,/) + 2, str.length);
-
+                    let class_teacher = "";
                     let class_place = 0;
 
-                    if(str.search(/[а-я0-9][а-я]*[А-Я]/) > -1) {
-                        let match = str.match(/[а-я0-9][а-я]*[А-Я]/);
-                        let index = match.index + match[0].length - 1;
-                        class_place = str.substring(0, index);
-                        str = str.slice(index, str.length);
+                    if(str[0] === "В") {
+                        class_place = str.substring(0, str.search(/ние/) + 3);
+                        str = str.slice(str.search(/ние/) + 3, str.length);
                     }
                     else {
-                        if(str.search(/идео-лекция/) > -1)
-                            str = "В" + str;
-                        class_place = str;
-                        str = "";
+                        class_teacher = str.substring(0, str.search(/,/));
+                        str = str.slice(str.search(/,/) + 2, str.length);
+
+                        if (str.search(/[а-я0-9][а-я]*[А-Я]/) > -1) {
+                            let match = str.match(/[а-я0-9][а-я]*[А-Я]/);
+                            let index = match.index + match[0].length - 1;
+                            class_place = str.substring(0, index);
+                            str = str.slice(index, str.length);
+                        }
+                        else {
+                            class_place = str;
+                            str = "";
+                        }
                     }
                     let moodle_link = "none";
                     if(row.group_columns[group].links && row.group_columns[group].links[iterator])
                         moodle_link = row.group_columns[group].links[iterator].link;
-                    timetable_processed.days[current_day].hours[current_hour].weeks[current_week].classes.push({
+                    timetable_processed.subgroups[_group].days[current_day].hours[current_hour].weeks[current_week].classes.push({
                         class: class_name,
                         type: class_type,
                         moodle_link: moodle_link,
@@ -270,7 +287,7 @@ const getGroupTimetable = async function (groupURL) {
             }
             for(const column of row.info_columns) {
                 if(column.attr === "dayname") {
-                    timetable_processed.days.push({
+                    timetable_processed.subgroups[subgroupIndex].days.push({
                         day: column.text,
                         hours: []
                     });
@@ -291,7 +308,7 @@ const getGroupTimetable = async function (groupURL) {
                     }
                     temp = temp[0] + " — " + temp[1];
 
-                    timetable_processed.days[current_day].hours.push({
+                    timetable_processed.subgroups[subgroupIndex].days[current_day].hours.push({
                         timespan: temp,
                         weeks: [{
                             classes: []
@@ -299,17 +316,17 @@ const getGroupTimetable = async function (groupURL) {
                     })
                     current_hour++;
                     current_week = 0;
-                    parseClasses(current_day, current_hour, current_week, 0);
+                    parseClasses(current_day, current_hour, current_week, subgroupIndex);
                 }
                 else if(column.text === "Н") {
-                    timetable_processed.days[current_day].hours[current_hour].weeks.push({
+                    timetable_processed.subgroups[subgroupIndex].days[current_day].hours[current_hour].weeks.push({
                         classes: []
                     })
                     current_week++;
-                    parseClasses(current_day, current_hour, current_week, 0);
+                    parseClasses(current_day, current_hour, current_week, subgroupIndex);
                 }
             }
-        })
+        })})
         return timetable_processed;
     } catch (e) {
         console.log(e);

@@ -101,7 +101,6 @@ const getAllCached = async function (req, res) {
 
 const getGroupTimetable = async function(req, res) {
     let groupURL = req.query.groupURL;
-    console.log(groupURL);
     if(!groupURL) {
         res.status(500).json({status: 500, message: 'No group URL specified'});
         return;

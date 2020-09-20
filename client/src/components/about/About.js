@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Container, Image, Jumbotron, Row, Col, Button} from "react-bootstrap";
+import {Container, Image, Jumbotron, Row, Col, Button, Media} from "react-bootstrap";
 import PropTypes from 'prop-types';
 
 class About extends Component {
@@ -8,7 +8,7 @@ class About extends Component {
             <Container className="justify-content-md-center" style={{marginTop: 150}}>
                     <Jumbotron>
                         <Row>
-                            <Col sm-2>
+                            <Col md style={{paddingBottom: 50}}>
                                 <h1>Ну дарова</h1>
                                 <p>
                                     Я даже не знаю че тебе забаклякать.
@@ -24,8 +24,8 @@ class About extends Component {
                                     GitHub
                                 </Button>
                             </Col>
-                            <Col md="auto">
-                                <Image src='/img/about.jpg' style={{width: 400}}/>
+                            <Col>
+                                <Image src='/img/about.jpg' fluid style={{minWidth: 260}}/>
                             </Col>
                         </Row>
                     </Jumbotron>

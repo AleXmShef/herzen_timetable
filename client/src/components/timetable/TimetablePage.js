@@ -24,16 +24,21 @@ class TimetablePage extends Component {
     constructor(props) {
         super(props);
         let group = localStorage.getItem('group');
+        let subgroup = 0;
         let shouldRender = true;
         if(!group) {
             shouldRender = false;
         }
         else {
             group = JSON.parse(group);
+            subgroup = localStorage.getItem('subgroup');
+            if(!subgroup)
+                subgroup = 0;
         }
         this.state = {
             shouldRender: shouldRender,
             group: group,
+            subgroup: subgroup,
             timetable: {},
             currentDate: 0,
             currentDateMil: Date.now(),
@@ -44,6 +49,7 @@ class TimetablePage extends Component {
             isOddWeek: 0
         }
         this.changeWeek = this.changeWeek.bind(this);
+        this.changeSubgroup = this.changeSubgroup.bind(this);
     }
 
     componentDidMount() {
@@ -63,6 +69,13 @@ class TimetablePage extends Component {
         }
         else
             this.props.history.push('/');
+    }
+
+    changeSubgroup(subgroup) {
+        if(this.state.subgroups !== subgroup - 1) {
+            localStorage.setItem('subgroup', (subgroup - 1).toString());
+            this.setState({subgroup: subgroup - 1});
+        }
     }
 
     parseDates() {
@@ -122,7 +135,9 @@ class TimetablePage extends Component {
     }
 
     render() {
-        return this.state.shouldRender && (
+        let {shouldRender, timetable, group, subgroup} = this.state;
+        return (shouldRender && timetable.subgroups && timetable.subgroups[subgroup]) ? (
+
             <Container className="justify-content-md-center" style={{marginTop: 150}}>
                 <Overhead
                     isOddWeek={this.state.isOddWeek}
@@ -130,12 +145,15 @@ class TimetablePage extends Component {
                     weekEnd={this.state.currentWeekEnd}
                     months={Months}
                     changeWeek={this.changeWeek}
-                    groupName={this.state.group.group}
+                    groupName={group.group}
+                    activeSubgroup={subgroup}
+                    changeSubgroup={this.changeSubgroup}
+                    subgroupsNumber={timetable.subgroups.length}
                 />
-                {this.state.timetable.days ? this.state.timetable.days.map(day => {
+                {timetable.subgroups[subgroup].days ? timetable.subgroups[subgroup].days.map(day => {
                     const dayDateMil =
                         this.state.currentWeekBeginMil +
-                        this.state.timetable.days.indexOf(day) *
+                        timetable.subgroups[subgroup].days.indexOf(day) *
                         24*60*60*1000;
 
                     const dayDate = new Date(dayDateMil);
@@ -153,7 +171,7 @@ class TimetablePage extends Component {
                         <Spinner animation='border' variant='primary'/>
                     </div>}
             </Container>
-        )
+        ) : <div></div>
     }
 }
 

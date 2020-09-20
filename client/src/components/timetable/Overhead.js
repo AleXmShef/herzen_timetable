@@ -43,12 +43,13 @@ class Overhead extends Component {
                 <h5>
                     {(this.props.isOddWeek ? "нижняя" : "верхняя") +  " неделя"}
                 </h5>
-                <Nav className="justify-content-center">
+                {(this.props.subgroupsNumber > 1) ?
+                <Nav className="justify-content-center" onSelect={(eventKey) => {this.props.changeSubgroup(eventKey)}}>
                     <NavDropdown id={"subgroups_dropdown"} title={"Подгруппа"}>
-                        <NavDropdown.Item eventKey="4.1">Подгруппа 1</NavDropdown.Item>
-                        <NavDropdown.Item eventKey="4.2">Подгруппа 2</NavDropdown.Item>
+                        <NavDropdown.Item eventKey={1} active={(this.props.activeSubgroup === 0)}>Подгруппа 1</NavDropdown.Item>
+                        <NavDropdown.Item eventKey={2} active={(this.props.activeSubgroup === 1)}>Подгруппа 2</NavDropdown.Item>
                     </NavDropdown>
-                </Nav>
+                </Nav> : undefined}
             </Jumbotron>
         );
     }
@@ -60,7 +61,10 @@ Overhead.propTypes = {
     weekEnd: PropTypes.object.isRequired,
     months: PropTypes.array.isRequired,
     changeWeek: PropTypes.func.isRequired,
-    groupName: PropTypes.string.isRequired
+    groupName: PropTypes.string.isRequired,
+    activeSubgroup: PropTypes.number.isRequired,
+    changeSubgroup: PropTypes.func.isRequired,
+    subgroupsNumber: PropTypes.number.isRequired
 };
 
 export default Overhead;

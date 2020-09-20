@@ -69,6 +69,7 @@ class HomePage extends Component {
             }
             let group = _data[arrays[senderStage - 1]][senderIndex - 1];
             localStorage.setItem('group', JSON.stringify(group));
+            localStorage.setItem('subgroup', '0');
             this.props.history.push('/timetable');
         }
         else if(currentStage < senderStage) {
