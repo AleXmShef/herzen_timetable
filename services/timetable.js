@@ -180,13 +180,13 @@ const getGroupTimetable = async function (groupURL) {
                 }),
                 group_columns: group('td', {
                     text: text(':self'),
+                    rowspan: attr(':self', 'rowspan'),
                     links: group('strong a', {
                         link: href(':self', '')
                     })
                 })
             })
         });
-        //let timetable_processed = {days: []};
         let timetable_processed = {subgroups: []};
         for(let i = 0; i < timetable_parsed.header_columns.length - 1; i++) {
             timetable_processed.subgroups[i] = {days: []};
@@ -201,6 +201,11 @@ const getGroupTimetable = async function (groupURL) {
                 let group = _group;
                 if(row.group_columns[_group] === undefined)
                     group = 0;
+                else {
+                    if(row.group_columns[_group].rowspan === "2")
+                        timetable_parsed.rows[timetable_parsed.rows.indexOf(row) + 1]
+                            .group_columns.push({text: row.group_columns[_group].text, links: row.group_columns[_group].links})
+                }
                 let str = row.group_columns[group].text;
                 let iterator = 0;
                 while(true) {
