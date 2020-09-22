@@ -101,10 +101,11 @@ class TimetablePage extends Component {
             firstSeptemberMil-= 24 * 60 * 60 * 1000;
 
         let yearWeekBegin = new Date(firstSeptemberMil);
-        const isOdd = this.isOddWeek(yearWeekBegin.getTime(), currentDate.getTime());
 
         let currentWeekBeginMil = currentDateMil - 24 * 60 * 60 * 1000 * (currentDate.getDay() - 1);
         let currentWeekBegin = new Date(currentWeekBeginMil);
+
+        const isOdd = this.isOddWeek(yearWeekBegin.getTime(), currentWeekBegin.getTime());
 
         let currentWeekEndMil = currentWeekBeginMil + 6 * 24 * 60 * 60 * 1000;
         let currentWeekEnd = new Date(currentWeekEndMil);
