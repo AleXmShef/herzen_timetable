@@ -405,7 +405,7 @@ const parseGroupTimetableForCurrentWeek = function (timetable, subgroup) {
                                 setClass(__class);
                             }
                         } else if (date.type === "interval") {
-                            if (date.begin < dateIterator && dateIterator < date.end) {
+                            if (date.begin <= dateIterator && dateIterator <= date.end) {
                                 setClass(__class);
                             }
                         }
@@ -417,7 +417,7 @@ const parseGroupTimetableForCurrentWeek = function (timetable, subgroup) {
             timetable_parsed.days.push(day);
             dateIterator += 24 * 60 * 60 * 1000;
         }
-        return timetable_parsed;
+        return timetable_parsed.days;
     } catch (e) {
         console.log(e);
         throw Error('Error while fetching timetable');
