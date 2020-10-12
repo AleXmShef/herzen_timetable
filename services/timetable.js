@@ -188,7 +188,7 @@ const getGroupTimetable = async function (groupURL) {
             })
         });
         let timetable_processed = {subgroups: []};
-        for(let i = 0; i < timetable_parsed.header_columns.length - 1; i++) {
+        for(let i = 0; i < timetable_parsed.header_columns.length - 2; i++) {
             timetable_processed.subgroups[i] = {days: []};
         }
         timetable_processed.subgroups.forEach(subgroup => {
@@ -375,7 +375,6 @@ const parseGroupTimetableForCurrentWeek = function (timetable, subgroup) {
     }
 
     try {
-
         const res = parseDates();
         const currentWeekBegin = res.currentWeekBeginMil;
         const isOdd = res.isOdd;
