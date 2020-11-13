@@ -218,6 +218,8 @@ const getGroupTimetable = async function (groupURL) {
                         break;
                     }
                     let class_name = str.substring(0, str.search(/\[/));
+                    if(class_name === "Инфороматика")
+                        class_name = "Информатика";
                     str = str.slice(str.search(/\[/), str.length);
 
                     let class_type = str.substring(0, str.search(/]/) + 1);
