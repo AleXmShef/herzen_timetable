@@ -190,7 +190,7 @@ class TimetablePage extends Component {
                         24*60*60*1000;
 
                     const dayDate = new Date(dayDateMil);
-                    let isCurrent = dayDateMil === this.state.currentCurrentDateMil;
+                    let isCurrent = dayDateMil === this.state.currentDateMil;
 
                     return <div ref={isCurrent ? this.myRef : null}>
                             <DayCard
