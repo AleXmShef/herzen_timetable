@@ -392,6 +392,7 @@ const parseGroupTimetableForCurrentWeek = function (timetable, subgroup) {
                         start_time: tmp[0].replace(":", ""),
                         end_time: tmp[1].replace(":", ""),
                         name: __class.class,
+                        type: __class.type,
                         course_link: __class.moodle_link
                     }
                 }
