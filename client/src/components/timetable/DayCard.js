@@ -9,6 +9,8 @@ class DayCard extends Component {
         this.state = {
             isRemote: 0
         }
+
+        console.log(this.props.day);
     }
 
     componentDidMount() {
@@ -35,7 +37,28 @@ class DayCard extends Component {
         return __class;
     }
 
+    isActiveClass(time) {
+        let cur_time = new Date(Date.now());
+        cur_time = cur_time.toTimeString();
+        let _times = time.split(" — ");
+        let begin_time = _times[0].split(":");
+        let end_time = _times[1].split(":");
+        cur_time = cur_time.substr(0, 5);
+        cur_time = cur_time.split(":");
+
+        if(cur_time[0] >= begin_time[0] && cur_time[0] <= end_time[0]) {
+            if(cur_time[0] === begin_time[0] && cur_time[1] >= begin_time[1])
+                return true;
+            else if(cur_time[0] === end_time[0] && cur_time[1] <= end_time[1])
+                return true;
+            return false;
+        }
+
+
+    }
+
     render() {
+        let isEmpty = true;
         return (
             <Card style={{marginBottom: 40}} bg={this.state.isRemote ? 'light' : 'default'}>
                 <Card.Header>
@@ -47,12 +70,16 @@ class DayCard extends Component {
                         this.props.months[this.props.currentDate.getMonth()]
                     }
                 </Card.Header>
-                <ListGroup variant='flush'>
+                {this.props.day.hours.length > 0 ? <ListGroup variant='flush'>
                     {this.props.day.hours.map(hour => {
                         let week = hour.weeks[this.props.isOddWeek] ? this.props.isOddWeek : 0;
                         let _class = this.parseClasses(hour.weeks[week].classes);
+                        if(_class)
+                            isEmpty = false;
                         return _class ?
-                            <ListGroupItem key={hour.timespan}>
+                            <ListGroupItem
+                                key={hour.timespan}
+                                variant={this.props.isCurrent && this.isActiveClass(hour.timespan) ? "primary" : ""}>
                             <Row>
                                 <Col sm style={{display: "flex"}}>
                                     <Icon.Clock size={24} className="timetable-icon"/>
@@ -78,7 +105,8 @@ class DayCard extends Component {
                             </Row>
                         </ListGroupItem> : undefined
                     })}
-                </ListGroup>
+                    {isEmpty ? <ListGroupItem>В этот день ничего нет</ListGroupItem> : undefined}
+                </ListGroup> : <Card.Body> no </Card.Body> }
             </Card>
         );
     }
@@ -89,7 +117,8 @@ DayCard.propTypes = {
     isOddWeek: PropTypes.number.isRequired,
     currentDateMil: PropTypes.number.isRequired,
     currentDate: PropTypes.object.isRequired,
-    months: PropTypes.array.isRequired
+    months: PropTypes.array.isRequired,
+    isCurrent: PropTypes.bool.isRequired
 };
 
 export default DayCard;

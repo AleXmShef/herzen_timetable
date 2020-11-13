@@ -45,4 +45,10 @@ router.get('/all_cached', TimetableControllers.getAllCached);
 // @desc    Get timetable for a specified group url
 router.get('/group', TimetableControllers.getGroupTimetable);
 
+// @route   GET api/timetable/group
+// @args    "groupURL" - group URL, begins with /static
+// @access  Public
+// @desc    Get timetable for a specified group url
+router.get('/group_forCurrentWeek', TimetableControllers.getGroupTimetable_forCurrentWeek);
+
 module.exports = router;

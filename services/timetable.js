@@ -180,15 +180,15 @@ const getGroupTimetable = async function (groupURL) {
                 }),
                 group_columns: group('td', {
                     text: text(':self'),
+                    rowspan: attr(':self', 'rowspan'),
                     links: group('strong a', {
                         link: href(':self', '')
                     })
                 })
             })
         });
-        //let timetable_processed = {days: []};
         let timetable_processed = {subgroups: []};
-        for(let i = 0; i < timetable_parsed.header_columns.length - 1; i++) {
+        for(let i = 0; i < timetable_parsed.header_columns.length - 2; i++) {
             timetable_processed.subgroups[i] = {days: []};
         }
         timetable_processed.subgroups.forEach(subgroup => {
@@ -201,6 +201,11 @@ const getGroupTimetable = async function (groupURL) {
                 let group = _group;
                 if(row.group_columns[_group] === undefined)
                     group = 0;
+                else {
+                    if(row.group_columns[_group].rowspan === "2")
+                        timetable_parsed.rows[timetable_parsed.rows.indexOf(row) + 1]
+                            .group_columns.push({text: row.group_columns[_group].text, links: row.group_columns[_group].links})
+                }
                 let str = row.group_columns[group].text;
                 let iterator = 0;
                 while(true) {
@@ -334,11 +339,98 @@ const getGroupTimetable = async function (groupURL) {
     }
 }
 
+const parseGroupTimetableForCurrentWeek = function (timetable, subgroup) {
+    function isOddWeek(start, check) {
+        let begin = start;
+        let isOdd = 0;
+        while(begin < check) {
+            begin += 7 * 24 * 60 * 60 * 1000;
+            if(isOdd === 1)
+                isOdd = 0;
+            else
+                isOdd = 1;
+        }
+        return isOdd;
+    }
+
+    function parseDates() {
+        let currentDateMil = new Date(Date.now());
+        const currentDate = new Date(currentDateMil.getFullYear(), currentDateMil.getMonth(), currentDateMil.getDate());
+        currentDateMil = currentDate.getTime();
+
+        let firstSeptember = new Date(currentDate.getFullYear(), 8, 1);
+        let firstSeptemberMil = firstSeptember.getTime();
+
+        for(let i = firstSeptember.getDay(); i > 1; i--)
+            firstSeptemberMil-= 24 * 60 * 60 * 1000;
+
+        let yearWeekBegin = new Date(firstSeptemberMil);
+
+        let currentWeekBeginMil = currentDateMil - 24 * 60 * 60 * 1000 * (currentDate.getDay() - 1);
+        let currentWeekBegin = new Date(currentWeekBeginMil);
+
+        const isOdd = isOddWeek(yearWeekBegin.getTime(), currentWeekBegin.getTime());
+
+        return {currentWeekBeginMil: currentWeekBeginMil, isOdd: isOdd};
+    }
+
+    try {
+        const res = parseDates();
+        const currentWeekBegin = res.currentWeekBeginMil;
+        const isOdd = res.isOdd;
+
+        let timetable_parsed = {days: []};
+
+        let dateIterator = currentWeekBegin;
+
+        for (const _day of timetable.subgroups[subgroup].days) {
+            let day = [];
+            for (const hour of _day.hours) {
+                function setClass(__class) {
+                    let tmp = hour.timespan.split(" — ");
+                    _class = {
+                        start_time: tmp[0].replace(":", ""),
+                        end_time: tmp[1].replace(":", ""),
+                        name: __class.class,
+                        type: __class.type,
+                        course_link: __class.moodle_link
+                    }
+                }
+                let _class = 0;
+                let temp = (hour.weeks[isOdd]) ? hour.weeks[isOdd] : hour.weeks[0]
+                for (const __class of temp.classes) {
+                    for (const date of __class.dates) {
+                        if (date.type === "singular") {
+                            if (dateIterator === date.date) {
+                                setClass(__class);
+                            }
+                        } else if (date.type === "interval") {
+                            if (date.begin <= dateIterator && dateIterator <= date.end) {
+                                setClass(__class);
+                            }
+                        }
+                    }
+                }
+                if (_class)
+                    day.push(_class);
+            }
+            timetable_parsed.days.push(day);
+            dateIterator += 24 * 60 * 60 * 1000;
+        }
+        return timetable_parsed.days;
+    } catch (e) {
+        console.log(e);
+        throw Error('Error while fetching timetable');
+    }
+
+}
+
 module.exports = {
     getFaculties,
     getTypes,
     getLevels,
     getProgramLinks,
     getPrograms,
-    getGroupTimetable
+    getGroupTimetable,
+    parseGroupTimetableForCurrentWeek
 }

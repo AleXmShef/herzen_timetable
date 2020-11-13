@@ -113,6 +113,24 @@ const getGroupTimetable = async function(req, res) {
     }
 }
 
+const getGroupTimetable_forCurrentWeek = async function(req, res) {
+    let groupID = req.query.groupID;
+    let subgroup = req.query.subgroup;
+    if(!subgroup) subgroup = 0;
+    if(!groupID) {
+        res.status(500).json({status: 500, message: 'No group ID specified'});
+        return;
+    }
+    try {
+        let timetable_legacy = await TimetableServices.getGroupTimetable(`/static/schedule_view.php?id_group=${groupID}&sem=1`);
+        let timetable_parsed = TimetableServices.parseGroupTimetableForCurrentWeek(timetable_legacy, subgroup);
+        res.status(200).json(timetable_parsed);
+    } catch (e) {
+        res.status(500).json({status: 500, message: e.message});
+    }
+
+}
+
 module.exports = {
     getFaculties,
     getTypes,
@@ -120,5 +138,6 @@ module.exports = {
     getPrograms,
     getAll,
     getAllCached,
-    getGroupTimetable
+    getGroupTimetable,
+    getGroupTimetable_forCurrentWeek
 }
