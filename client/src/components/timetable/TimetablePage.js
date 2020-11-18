@@ -70,6 +70,7 @@ class TimetablePage extends Component {
         if(this.state.shouldRender) {
             this.parseDates();
 
+
             let _timetable = localStorage.getItem('localTimetable');
 
             if(_timetable)
@@ -163,6 +164,7 @@ class TimetablePage extends Component {
         if(this.myRef.current)
             this.myRef.current.scrollIntoView({
                 behavior: "smooth",
+                block: "center"
             });
     }
 

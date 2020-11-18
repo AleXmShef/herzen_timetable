@@ -51,6 +51,8 @@ class DayCard extends Component {
                 return true;
             else if(cur_time[0] === end_time[0] && cur_time[1] <= end_time[1])
                 return true;
+            else if(cur_time[0] !== begin_time[0] && cur_time[0] !== end_time[0])
+                return true;
             return false;
         }
 
