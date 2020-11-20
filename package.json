@@ -21,11 +21,11 @@
     "axios": "^0.20.0",
     "body-parser": "^1.19.0",
     "concurrently": "^5.3.0",
-    "config": "^3.3.1",
+    "config": "^3.3.2",
     "express": "^4.17.1",
     "html-to-json-data": "^1.6.0",
-    "mongoose": "^5.10.3",
-    "nodemon": "^2.0.4",
+    "mongoose": "^5.10.11",
+    "nodemon": "^2.0.6",
     "serve-favicon": "^2.5.0"
   }
 }

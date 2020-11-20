@@ -188,7 +188,7 @@ const getGroupTimetable = async function (groupURL) {
             })
         });
         let timetable_processed = {subgroups: []};
-        for(let i = 0; i < timetable_parsed.header_columns.length - 1; i++) {
+        for(let i = 0; i < timetable_parsed.header_columns.length - 2; i++) {
             timetable_processed.subgroups[i] = {days: []};
         }
         timetable_processed.subgroups.forEach(subgroup => {
@@ -218,6 +218,8 @@ const getGroupTimetable = async function (groupURL) {
                         break;
                     }
                     let class_name = str.substring(0, str.search(/\[/));
+                    if(class_name === "Инфороматика")
+                        class_name = "Информатика";
                     str = str.slice(str.search(/\[/), str.length);
 
                     let class_type = str.substring(0, str.search(/]/) + 1);
@@ -375,7 +377,6 @@ const parseGroupTimetableForCurrentWeek = function (timetable, subgroup) {
     }
 
     try {
-
         const res = parseDates();
         const currentWeekBegin = res.currentWeekBeginMil;
         const isOdd = res.isOdd;
@@ -393,6 +394,7 @@ const parseGroupTimetableForCurrentWeek = function (timetable, subgroup) {
                         start_time: tmp[0].replace(":", ""),
                         end_time: tmp[1].replace(":", ""),
                         name: __class.class,
+                        type: __class.type,
                         course_link: __class.moodle_link
                     }
                 }
@@ -405,7 +407,7 @@ const parseGroupTimetableForCurrentWeek = function (timetable, subgroup) {
                                 setClass(__class);
                             }
                         } else if (date.type === "interval") {
-                            if (date.begin < dateIterator && dateIterator < date.end) {
+                            if (date.begin <= dateIterator && dateIterator <= date.end) {
                                 setClass(__class);
                             }
                         }
@@ -417,7 +419,7 @@ const parseGroupTimetableForCurrentWeek = function (timetable, subgroup) {
             timetable_parsed.days.push(day);
             dateIterator += 24 * 60 * 60 * 1000;
         }
-        return timetable_parsed;
+        return timetable_parsed.days;
     } catch (e) {
         console.log(e);
         throw Error('Error while fetching timetable');

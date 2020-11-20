@@ -21,6 +21,7 @@ const Months = [
 ];
 
 class TimetablePage extends Component {
+    myRef = React.createRef();
     constructor(props) {
         super(props);
         let group = localStorage.getItem('group');
@@ -61,25 +62,38 @@ class TimetablePage extends Component {
         }
         this.changeWeek = this.changeWeek.bind(this);
         this.changeSubgroup = this.changeSubgroup.bind(this);
+        this.executeScroll = this.executeScroll.bind(this);
     }
 
     componentDidMount() {
-        window.scrollTo(0,0);
 
         if(this.state.shouldRender) {
             this.parseDates();
+
+
+            let _timetable = localStorage.getItem('localTimetable');
+
+            if(_timetable)
+                this.setState({timetable: JSON.parse(_timetable)});
+
             axios.get('/api/timetable/group', {
                 params: {
                     groupURL: this.state.group.link
                 }
             }).then((res) => {
+                localStorage.setItem('localTimetable', JSON.stringify(res.data));
                 this.setState({timetable: res.data});
             }).catch((err) => {
-                console.log(err);
+                console.log("failed to connect to server, using local copy");
             })
         }
         else
             this.props.history.push('/');
+
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        this.executeScroll()
     }
 
     changeSubgroup(subgroup) {
@@ -146,6 +160,14 @@ class TimetablePage extends Component {
 
     }
 
+    executeScroll = () => {
+        if(this.myRef.current)
+            this.myRef.current.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+    }
+
     render() {
         let {shouldRender, timetable, group, subgroup} = this.state;
         return shouldRender && (
@@ -165,19 +187,23 @@ class TimetablePage extends Component {
                 {( timetable.subgroups && timetable.subgroups[subgroup] && timetable.subgroups[subgroup].days) ? timetable.subgroups[subgroup].days.map(day => {
                     const dayDateMil =
                         this.state.currentWeekBeginMil +
-                       this.state.days.indexOf(day.day) *
+                        this.state.days.indexOf(day.day) *
                         24*60*60*1000;
 
                     const dayDate = new Date(dayDateMil);
+                    let isCurrent = dayDateMil === this.state.currentDateMil;
 
-                    return <DayCard
-                        key={day.day}
-                        day={day}
-                        isOddWeek={this.state.isOddWeek}
-                        currentDateMil={dayDateMil}
-                        currentDate={dayDate}
-                        months={Months}
-                    />
+                    return <div ref={isCurrent ? this.myRef : null}>
+                            <DayCard
+                            key={day.day}
+                            day={day}
+                            isCurrent = {isCurrent}
+                            isOddWeek={this.state.isOddWeek}
+                            currentDateMil={dayDateMil}
+                            currentDate={dayDate}
+                            months={Months}
+                        />
+                    </div>
                 }) :
                     <div className='d-flex justify-content-center' style={{marginBottom: 2000}}>
                         <Spinner animation='border' variant='primary'/>
