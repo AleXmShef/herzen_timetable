@@ -70,19 +70,32 @@ class TimetablePage extends Component {
         if(this.state.shouldRender) {
             this.parseDates();
 
-
             let _timetable = localStorage.getItem('localTimetable');
 
             if(_timetable)
                 this.setState({timetable: JSON.parse(_timetable)});
 
+            let link = this.state.group.link;
+
+            if(this.state.group.link.charAt(this.state.group.link.length - 1) === "1") {
+                let str = this.state.group.link.slice(0, this.state.group.link.length - 2);
+                str = str + "2";
+                link = str;
+
+                let group = this.state.group;
+                group.link = link;
+                localStorage.setItem("group", group);
+            }
+
+
+
             axios.get('/api/timetable/group', {
                 params: {
-                    groupURL: this.state.group.link
+                    groupURL: link
                 }
             }).then((res) => {
                 localStorage.setItem('localTimetable', JSON.stringify(res.data));
-                this.setState({timetable: res.data});
+                this.setState({timetable: res.data, group: {group: this.state.group.group, link: link}});
             }).catch((err) => {
                 console.log("failed to connect to server, using local copy");
             })
