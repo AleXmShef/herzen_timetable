@@ -236,9 +236,9 @@ const getGroupTimetable = async function (groupURL) {
                         if(date.includes('—') || date.includes('-')) {
                             let borders = date.split(/[—-]/);
                             let begin = borders[0].split('.');
-                            begin = new Date(2020, parseInt(begin[1]) - 1, parseInt(begin[0])).getTime();
+                            begin = new Date(2021, parseInt(begin[1]) - 1, parseInt(begin[0])).getTime();
                             let end = borders[1].split('.');
-                            end = new Date(2020, parseInt(end[1]) - 1, parseInt(end[0])).getTime();
+                            end = new Date(2021, parseInt(end[1]) - 1, parseInt(end[0])).getTime();
                             class_dates.push({
                                 type: 'interval',
                                 begin: begin,
