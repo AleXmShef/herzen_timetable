@@ -122,7 +122,7 @@ const getGroupTimetable_forCurrentWeek = async function(req, res) {
         return;
     }
     try {
-        let timetable_legacy = await TimetableServices.getGroupTimetable(`/static/schedule_view.php?id_group=${groupID}&sem=1`);
+        let timetable_legacy = await TimetableServices.getGroupTimetable(`/static/schedule_view.php?id_group=${groupID}&sem=2`);
         let timetable_parsed = TimetableServices.parseGroupTimetableForCurrentWeek(timetable_legacy, subgroup);
         res.status(200).json(timetable_parsed);
     } catch (e) {

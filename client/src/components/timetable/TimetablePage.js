@@ -163,8 +163,8 @@ class TimetablePage extends Component {
     executeScroll = () => {
         if(this.myRef.current)
             this.myRef.current.scrollIntoView({
-                behavior: "smooth",
-                block: "center"
+                block: "center",
+                behavior: "smooth"
             });
     }
 

@@ -9,7 +9,7 @@ import TimetablePage from "./components/timetable/TimetablePage";
 import About from "./components/about/About";
 import Footer from "./components/Footer";
 
-class App  extends Component  {
+class App extends Component  {
     render() {
         return (
         <Router>
