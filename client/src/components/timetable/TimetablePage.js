@@ -122,7 +122,10 @@ class TimetablePage extends Component {
 		const currentDate = new Date(currentDateMil.getFullYear(), currentDateMil.getMonth(), currentDateMil.getDate());
 		currentDateMil = currentDate.getTime();
 
-		let firstSeptember = new Date(currentDate.getFullYear(), 8, 1);
+		let currentYear = currentDate.getFullYear();
+		if(currentDate.getMonth() < 8)
+			currentYear--;
+		let firstSeptember = new Date(currentYear, 8, 1);
 		let firstSeptemberMil = firstSeptember.getTime();
 
 		for(let i = firstSeptember.getDay(); i > 1; i--)
