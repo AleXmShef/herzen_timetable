@@ -70,16 +70,48 @@ const getLevels = async function(faculty, type) {
     }
 }
 
-const getProgramLinks = async function(faculty, type, level) {
+const getYears = async function(faculty, type, level) {
+    try {
+        const years_raw = await TimetableRequests.getGlobal();
+        const years_parsed = await parser(years_raw.data, {
+            years: group(`h3:contains(${faculty}) + div h4:contains(${type}) + ul li:contains(${level})`, {
+                year: text(':self')
+            })
+        });
+        let _years = new Set();
+        years_parsed.years.forEach(year => {
+            const raw_year = parseInt(year.year.split(", ")[1].split(" ")[0], 10);     //current grade
+            // const date = new Date();
+            // const cur_year = date.getFullYear();
+            // const cur_month = date.getMonth();
+            // if(cur_month < 6)                       //find enrollment year
+            //     years.add(cur_year - raw_year);
+            // else
+            //     years.add(cur_year - raw_year + 1);
+            _years.add(raw_year);
+        })
+        let years_ = Array.from(_years);
+        let years = [];
+        years_.forEach(year => {
+            years.push({year: year.toString() + " курс"});
+        });
+        return {years: years};
+    } catch (e) {
+        console.log(e);
+        throw Error('Error while fetching enrollment years');
+    }
+}
+
+const getProgramLinks = async function(faculty, type, level, year) {
     try {
         const program_links_raw = await TimetableRequests.getGlobal();
-        const program_links_parced = await parser(program_links_raw.data, {
-            programs: group(`h3:contains(${faculty}) + div h4:contains(${type}) + ul li:contains(${level})`, {
+        const program_links_parsed = await parser(program_links_raw.data, {
+            programs: group(`h3:contains(${faculty}) + div h4:contains(${type}) + ul li:contains('${level}, ${year}')`, {
                 link: attr('button', 'onclick'),
             })
         });
         let program_links_processed = [];
-        program_links_parced.programs.forEach(program => {
+        program_links_parsed.programs.forEach(program => {
             const re = /'*'/
             let link = program.link.toString().split(re);
             program_links_processed.push(link[1]);
@@ -112,32 +144,17 @@ const getPrograms = async function(group_links) {
             if(programIndex !== -1) {
                 let subprogramIndex = programs[programIndex].subprograms.findIndex(subprogram => subprogram.subprogram === group_processed.subprogram);
                 if(subprogramIndex !== -1) {
-                    let yearIndex = programs[programIndex].subprograms[subprogramIndex].years.findIndex(year => year.year === group_processed.year);
-                    if(yearIndex !== -1) {
-                        programs[programIndex].subprograms[subprogramIndex].years[yearIndex].groups.push({
-                            group: group_processed.group,
-                            link: group_links[groups_processed.indexOf(group_processed)]
-                        })
-                    }
-                    else {
-                        programs[programIndex].subprograms[subprogramIndex].years.push({
-                            year: group_processed.year,
-                            groups: [{
-                                group: group_processed.group,
-                                link: group_links[groups_processed.indexOf(group_processed)]
-                            }]
-                        })
-                    }
+                    programs[programIndex].subprograms[subprogramIndex].groups.push({
+                        group: group_processed.group,
+                        link: group_links[groups_processed.indexOf(group_processed)]
+                    })
                 }
                 else {
                     programs[programIndex].subprograms.push({
                         subprogram: group_processed.subprogram,
-                        years: [{
-                            year: group_processed.year,
-                            groups: [{
-                                group: group_processed.group,
-                                link: group_links[groups_processed.indexOf(group_processed)]
-                            }]
+                        groups: [{
+                            group: group_processed.group,
+                            link: group_links[groups_processed.indexOf(group_processed)]
                         }]
                     })
                 }
@@ -147,12 +164,9 @@ const getPrograms = async function(group_links) {
                     program: group_processed.program,
                     subprograms: [{
                         subprogram: group_processed.subprogram,
-                        years: [{
-                            year: group_processed.year,
-                            groups: [{
-                                group: group_processed.group,
-                                link: group_links[groups_processed.indexOf(group_processed)]
-                            }]
+                        groups: [{
+                            group: group_processed.group,
+                            link: group_links[groups_processed.indexOf(group_processed)]
                         }]
                     }]
                 })
@@ -188,7 +202,7 @@ const getGroupTimetable = async function (groupURL) {
             })
         });
         let timetable_processed = {subgroups: []};
-        for(let i = 0; i < timetable_parsed.header_columns.length - 2; i++) {
+        for(let i = 0; i < timetable_parsed.header_columns.length - 1; i++) {
             timetable_processed.subgroups[i] = {days: []};
         }
         timetable_processed.subgroups.forEach(subgroup => {
@@ -223,7 +237,7 @@ const getGroupTimetable = async function (groupURL) {
                     str = str.slice(str.search(/\[/), str.length);
 
                     let class_type = str.substring(0, str.search(/]/) + 1);
-                    str = str.slice(str.search(/]/) + 2, str.length);
+                    str = str.slice(str.search(/]/) + 1, str.length);
 
                     let class_dates_raw = str.substring(0, str.search(/\)/) + 1);
                     class_dates_raw = class_dates_raw.substring(1, class_dates_raw.length - 1);
@@ -272,6 +286,13 @@ const getGroupTimetable = async function (groupURL) {
                             let index = match.index + match[0].length - 1;
                             class_place = str.substring(0, index);
                             str = str.slice(index, str.length);
+                        }
+                        else if(str.search(/\)[А-Я]/) > -1) {
+                            let match = str.match(/\)[А-Я]/);
+                            let index = match.index + match[0].length - 1;
+                            class_place = str.substring(0, index);
+                            str = str.slice(index, str.length);
+                            console.log(class_place);
                         }
                         else {
                             class_place = str;
@@ -431,6 +452,7 @@ module.exports = {
     getFaculties,
     getTypes,
     getLevels,
+    getYears,
     getProgramLinks,
     getPrograms,
     getGroupTimetable,

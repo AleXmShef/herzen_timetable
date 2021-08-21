@@ -21,10 +21,16 @@ router.get('/types', TimetableControllers.getTypes);
 // @desc    Get education levels for given faculty & education type
 router.get('/levels', TimetableControllers.getLevels);
 
-// @route   GET api/timetable/programs
+// @route   GET api/timetable/years
 // @args    "faculty" - faculty name, "type" - education type, "level" - education level
 // @access  Public
-// @desc    Get education programs _AND_SUBSEQUENT_SUBPROGRAMS,_YEARS_AND_GROUPS for given faculty, education type & level
+// @desc    Get possible enrollment years for given faculty, education type & education level
+router.get('/years', TimetableControllers.getYears);
+
+// @route   GET api/timetable/programs
+// @args    "faculty" - faculty name, "type" - education type, "level" - education level, "year" = enrollment year
+// @access  Public
+// @desc    Get education programs, subprograms and groups for given faculty, education type, level & enrollment year
 router.get('/programs', TimetableControllers.getPrograms);
 
 // @route   GET api/timetable/all
@@ -44,11 +50,5 @@ router.get('/all_cached', TimetableControllers.getAllCached);
 // @access  Public
 // @desc    Get timetable for a specified group url
 router.get('/group', TimetableControllers.getGroupTimetable);
-
-// @route   GET api/timetable/group
-// @args    "groupURL" - group URL, begins with /static
-// @access  Public
-// @desc    Get timetable for a specified group url
-router.get('/group_forCurrentWeek', TimetableControllers.getGroupTimetable_forCurrentWeek);
 
 module.exports = router;

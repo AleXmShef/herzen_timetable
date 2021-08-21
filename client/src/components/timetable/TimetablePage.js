@@ -77,24 +77,12 @@ class TimetablePage extends Component {
 
 			let link = this.state.group.link;
 
-			if(this.state.group.link.charAt(this.state.group.link.length - 1) === "1") {
-				let str = this.state.group.link.slice(0, this.state.group.link.length - 1);
-				str = str + "2";
-				link = str;
-				console.log(str);
-
-				let group = this.state.group;
-				group.link = link;
-				localStorage.setItem("group", JSON.stringify(group));
-			}
-
-
-
 			axios.get('/api/timetable/group', {
 				params: {
 					groupURL: link
 				}
 			}).then((res) => {
+				console.log(res.data);
 				localStorage.setItem('localTimetable', JSON.stringify(res.data));
 				this.setState({timetable: res.data, group: {group: this.state.group.group, link: link}});
 			}).catch((err) => {
@@ -178,7 +166,8 @@ class TimetablePage extends Component {
 	}
 
 	executeScroll = () => {
-		if(this.myRef.current)
+		let curMil = Date.now();
+		if(this.myRef.current && this.state.currentWeekBeginMil < curMil && curMil < this.state.currentWeekEndMil)
 			this.myRef.current.scrollIntoView({
 				block: "center",
 				behavior: "smooth"

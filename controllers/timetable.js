@@ -39,7 +39,7 @@ const getLevels = async function (req, res) {
     }
 }
 
-const getPrograms = async function (req, res) {
+const getYears = async function (req, res) {
     let faculty = req.query.faculty;
     let type = req.query.type;
     let level = req.query.level;
@@ -48,7 +48,24 @@ const getPrograms = async function (req, res) {
         return;
     }
     try {
-        const group_links = await TimetableServices.getProgramLinks(faculty, type, level);
+        const years = await TimetableServices.getYears(faculty, type, level);
+        res.status(200).json(years);
+    } catch (e) {
+        res.status(500).json({status: 500, message: e.message});
+    }
+}
+
+const getPrograms = async function (req, res) {
+    let faculty = req.query.faculty;
+    let type = req.query.type;
+    let level = req.query.level;
+    let year = req.query.year;
+    if(!faculty || !type || !level || !year) {
+        res.status(500).json({status: 500, message: 'No faculty or type or level or year specified'});
+        return;
+    }
+    try {
+        const group_links = await TimetableServices.getProgramLinks(faculty, type, level, year);
         const programs = await TimetableServices.getPrograms(group_links);
 
         res.status(200).json(programs);
@@ -135,6 +152,7 @@ module.exports = {
     getFaculties,
     getTypes,
     getLevels,
+    getYears,
     getPrograms,
     getAll,
     getAllCached,
