@@ -287,10 +287,14 @@ const getGroupTimetable = async function (groupURL) {
                             class_place = str.substring(0, index);
                             str = str.slice(index, str.length);
                         }
-                        else if(str.search(/\)[А-Я]/) > -1) {
-                            let match = str.match(/\)[А-Я]/);
+                        else if(str.search(/\) *[А-Я]/) > -1) {
+                            let match = str.match(/\) *[А-Я]/);
                             let index = match.index + match[0].length - 1;
                             class_place = str.substring(0, index);
+                            //i fucking hate my life
+                            let match2 = class_place.match(/\) /);
+                            let index2 = match2.index + match2[0].length - 1;
+                            class_place = class_place.substring(0, index2);
                             str = str.slice(index, str.length);
                             console.log(class_place);
                         }
