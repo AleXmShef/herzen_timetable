@@ -261,7 +261,7 @@ const getGroupTimetable = async function (groupURL) {
                         }
                         else {
                             let _date = date.split('.');
-                            _date = new Date(2020, parseInt(_date[1]) - 1, parseInt(_date[0])).getTime();
+                            _date = new Date(2021, parseInt(_date[1]) - 1, parseInt(_date[0])).getTime();
                             class_dates.push({
                                 type: 'singular',
                                 date: _date
@@ -287,10 +287,17 @@ const getGroupTimetable = async function (groupURL) {
                             class_place = str.substring(0, index);
                             str = str.slice(index, str.length);
                         }
+                        else if(str.search(/\)[А-Я]/) > -1) {
+                            let match = str.match(/\)[А-Я]/);
+                            let index = match.index + match[0].length - 1;
+                            class_place = str.substring(0, index);
+                            str = str.slice(index, str.length);
+                        }
                         else if(str.search(/\) *[А-Я]/) > -1) {
                             let match = str.match(/\) *[А-Я]/);
                             let index = match.index + match[0].length - 1;
                             class_place = str.substring(0, index);
+                            console.log(class_place);
                             //i fucking hate my life
                             let match2 = class_place.match(/\) /);
                             let index2 = match2.index + match2[0].length - 1;

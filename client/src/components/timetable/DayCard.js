@@ -14,6 +14,7 @@ class DayCard extends Component {
     }
 
     componentDidMount() {
+        console.log(this.props.currentDateMil);
         this.props.day.hours.forEach(hour => {
             let week = (hour.weeks[this.state.isOddWeek]) ? (hour.weeks[this.state.isOddWeek]) : hour.weeks[0];
             if(this.parseClasses(week.classes).place && !this.parseClasses(week.classes).place.includes("дист"))
